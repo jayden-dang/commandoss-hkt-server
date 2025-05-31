@@ -48,3 +48,4 @@ rpc-router.workspace = true
 # -- Internal Dependencies
 jd_utils = { path = "../../shared/jd_utils" }
 jd_storage = { path = "../../infrastructure/jd_storage" }
+github_service = { path = "../../services/github_service" }

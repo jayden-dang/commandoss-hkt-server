@@ -838,3 +838,77 @@ impl From<redis::RedisError> for Error {
     Self::RedisConnectionFailed { source: Box::new(err) }
   }
 }
+
+impl From<github_service::Error> for Error {
+  fn from(err: github_service::Error) -> Self {
+    match err {
+      github_service::Error::RepositoryNotFound { owner, repo } => {
+        Self::RouteNotFound {
+          path: format!("/repositories/{}/{}", owner, repo),
+          method: "GET".to_string(),
+        }
+      }
+      github_service::Error::NoSmartContractsFound => {
+        Self::InvalidRequestFormat {
+          message: "Repository does not contain any smart contracts".to_string(),
+        }
+      }
+      github_service::Error::GitHubApi(msg) => {
+        Self::service_error("github", 502, Some(msg))
+      }
+      github_service::Error::InvalidWebhookSignature => {
+        Self::ApiKeyAuthFailed {
+          reason: "Invalid webhook signature".to_string(),
+        }
+      }
+      github_service::Error::WebhookPayloadError(msg) => {
+        Self::InvalidRequestFormat {
+          message: format!("Invalid webhook payload: {}", msg),
+        }
+      }
+      github_service::Error::RateLimitExceeded { retry_after_seconds: _ } => {
+        Self::RateLimitExceeded {
+          client_id: "github_api".to_string(),
+          limit: 5000,
+          window: "hour".to_string(),
+        }
+      }
+      github_service::Error::JobNotFound(id) => {
+        Self::RouteNotFound {
+          path: format!("/jobs/{}", id),
+          method: "GET".to_string(),
+        }
+      }
+      github_service::Error::QueueFull => {
+        Self::service_unavailable("github_queue")
+      }
+      github_service::Error::AuthenticationError(msg) => {
+        Self::ApiKeyAuthFailed {
+          reason: msg,
+        }
+      }
+      github_service::Error::ConfigurationError(msg) => {
+        Self::GatewayConfig {
+          config_key: format!("github_service: {}", msg),
+        }
+      }
+      github_service::Error::Database(err) => {
+        Self::service_error("database", 500, Some(err.to_string()))
+      }
+      github_service::Error::Serialization(err) => {
+        Self::InvalidRequestFormat {
+          message: format!("Serialization error: {}", err),
+        }
+      }
+      github_service::Error::HttpRequest(err) => {
+        Self::service_error("github_api", 502, Some(err.to_string()))
+      }
+      github_service::Error::Octocrab(err) => {
+        Self::service_error("github_api", 502, Some(err.to_string()))
+      }
+      github_service::Error::Internal(msg) => {
+        Self::service_error("github", 500, Some(msg))
+      }
+    }
+  }
+}

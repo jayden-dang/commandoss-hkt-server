@@ -2,6 +2,7 @@ use axum::{middleware as axum_middleware, Router};
 use jd_core::AppState;
 
 mod error;
+mod github;
 mod log;
 pub mod middleware;
 mod routes_rpc;
@@ -34,7 +35,8 @@ pub fn v1_routes(app_state: AppState) -> Router {
             .merge(protected_zkpersona_routes)
             .merge(public_zkpersona_routes)
         )
-        .nest("/sui", sui::sui_router()),
+        .nest("/sui", sui::sui_router())
+        .nest("/github", github::github_router()),
     )
     .nest("/api", routes_rpc::routes(mm))
     .with_state(app_state)

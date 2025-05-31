@@ -1,0 +1,52 @@
+[package]
+name = "github_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Core dependencies
+jd_domain = { path = "../../shared/jd_domain" }
+jd_storage = { path = "../../infrastructure/jd_storage" }
+jd_utils = { path = "../../shared/jd_utils" }
+
+# GitHub API client
+octocrab = "0.32"
+
+# Async runtime
+tokio.workspace = true
+tokio-util = "0.7"
+
+# Web framework
+axum.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Date/Time
+chrono.workspace = true
+
+# UUIDs
+uuid.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Crypto for webhook verification
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+
+# HTTP client
+reqwest.workspace = true
+
+# Database
+sqlx.workspace = true
+
+[dev-dependencies]
+mockall = "0.12"
+tokio-test = "0.4"

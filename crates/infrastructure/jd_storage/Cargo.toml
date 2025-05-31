@@ -24,6 +24,7 @@ serde_with.workspace = true
 
 # -- Utilities
 derive_more.workspace = true
+rust_decimal.workspace = true
 
 # -- Error Handling
 thiserror.workspace = true
