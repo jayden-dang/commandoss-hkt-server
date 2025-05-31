@@ -1,0 +1,36 @@
+[package]
+name = "web_server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# -- Web Framework & HTTP
+axum.workspace = true
+tower-cookies.workspace = true
+tower-http = { workspace = true, features = ["cors"] }
+
+# -- Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# -- Async & Utilities
+tokio.workspace = true
+
+# -- Time & Date
+chrono.workspace = true
+
+# -- Error Handling
+thiserror.workspace = true
+
+# -- Logging & Tracing
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# -- Configuration
+dotenv.workspace = true
+
+# -- Internal Dependencies
+jd_core = { path = "../../core/jd_core" }
+jd_tracing = { path = "../../infrastructure/jd_tracing" }
+jd_utils = { path = "../../shared/jd_utils" }
+api_gateway = { path = "../api_gateway" }

@@ -1,0 +1,848 @@
+#+TITLE: Deployment Guide
+
+* Table of Contents :toc:
+- [[#prerequisites][Prerequisites]]
+  - [[#required-accounts-and-services][Required Accounts and Services]]
+  - [[#required-secrets][Required Secrets]]
+- [[#dockerfile-configuration][Dockerfile Configuration]]
+  - [[#builder-stage][Builder Stage]]
+  - [[#production-stage][Production Stage]]
+- [[#github-actions-workflow][GitHub Actions Workflow]]
+  - [[#key-components][Key components]]
+- [[#ec2-instance-setup][EC2 Instance Setup]]
+  - [[#launch-ec2-instance][Launch EC2 Instance]]
+  - [[#install-required-software][Install Required Software]]
+  - [[#development-mode-setup][Development Mode Setup]]
+  - [[#database-management-in-development][Database Management in Development]]
+  - [[#configure-postgresql][Configure PostgreSQL]]
+- [[#database-management][Database Management]]
+  - [[#deployment-options][Deployment Options]]
+  - [[#using-docker-option-1---recommended-for-development][Using Docker (Option 1 - Recommended for Development)]]
+  - [[#native-installation-option-2---alternative-for-production][Native Installation (Option 2 - Alternative for Production)]]
+  - [[#quick-reset-commands][Quick Reset Commands]]
+  - [[#database-management-scripts][Database Management Scripts]]
+  - [[#backup-strategy][Backup Strategy]]
+- [[#redis-deployment][Redis Deployment]]
+  - [[#development-environment][Development Environment]]
+  - [[#redis-setup-on-amazon-linux][Redis Setup on Amazon Linux]]
+  - [[#production-migration-guide][Production Migration Guide]]
+  - [[#monitoring-and-maintenance][Monitoring and Maintenance]]
+
+* Prerequisites
+** Required Accounts and Services
+- AWS Account
+- GitHub Account
+- DockerHub Account
+
+** Required Secrets
+*** GitHub Secrets
+- =DOCKERHUB_USERNAME=: Your DockerHub username
+- =DOCKERHUB_TOKEN=: Your DockerHub access token
+- =AWS_ACCESS_KEY_ID=: AWS IAM user access key
+- =AWS_SECRET_ACCESS_KEY=: AWS IAM user secret key
+- =EC2_HOST=: Your EC2 instance public IP
+- =EC2_USERNAME=: EC2 instance username (usually 'ec2-user')
+- =EC2_SSH_KEY=: Private SSH key for EC2 instance
+
+*** How to Get Required Keys
+**** DockerHub Token
+1. Log in to DockerHub
+2. Go to Account Settings > Security
+3. Click "New Access Token"
+4. Give it a name and select appropriate permissions
+5. Copy the token immediately (it won't be shown again)
+
+**** AWS Credentials
+1. Log in to AWS Console
+2. Go to IAM > Users
+3. Create a new user or select existing one
+4. Under "Security credentials" tab, create new access key
+5. Save both Access Key ID and Secret Access Key
+
+**** EC2 SSH Key
+1. In AWS Console, go to EC2 > Key Pairs
+2. Create new key pair or use existing one
+3. Download the .pem file
+4. Convert to format needed for GitHub Actions:
+#+BEGIN_SRC bash
+ssh-keygen -f your-key.pem -m PEM
+#+END_SRC
+
+* Dockerfile Configuration
+The Dockerfile is configured in two stages:
+** Builder Stage
+#+BEGIN_SRC dockerfile
+FROM rust:1.87.0-bullseye AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    binutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy all source code first
+COPY . .
+
+# Build with optimizations and caching
+RUN --mount=type=cache,target=/app/target \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
+    --mount=type=cache,target=/usr/local/rustup \
+    set -eux; \
+    rustup install stable; \
+    RUSTFLAGS="-C target-cpu=native" cargo build --workspace --release; \
+    find target/release -maxdepth 1 -type f -executable -exec cp {} ./app \;
+#+END_SRC
+
+** Production Stage
+#+BEGIN_SRC dockerfile
+FROM amazonlinux:2023 AS deploy
+
+# Install runtime dependencies
+RUN set -eux; \
+    dnf update -y && dnf install -y \
+    ca-certificates \
+    curl-minimal \
+    bind-utils \
+    iputils \
+    iproute \
+    htop \
+    jq \
+    shadow-utils \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf/*
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser
+
+WORKDIR /deploy
+
+# Copy binary from builder
+COPY --from=builder /app/app ./
+
+# Set proper permissions
+RUN chown -R appuser:appuser /deploy
+
+# Switch to non-root user
+USER appuser
+
+# Set environment variables
+ENV RUST_LOG=info
+ENV RUST_BACKTRACE=1
+ENV DATABASE_URL=postgresql://jayden:postgres@localhost:5432/jaydenblog
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+CMD ["./app"]
+#+END_SRC
+
+* GitHub Actions Workflow
+The workflow file (=.github/workflows/main.yml=) is configured to:
+1. Run tests
+2. Build and push Docker image
+3. Deploy to EC2
+
+** Key components
+#+BEGIN_SRC yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: jaydendang/jayden
+  AWS_REGION: ap-southeast-1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Run tests
+        run: cargo test --workspace
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker pull ${{ env.DOCKER_IMAGE }}:latest
+            docker stop jdblog || true
+            docker rm jdblog || true
+            docker run -d \
+              --name jdblog \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              --network host \
+              -e DATABASE_URL=postgresql://jayden:postgres@localhost:5432/jaydenblog \
+              ${{ env.DOCKER_IMAGE }}:latest
+#+END_SRC
+
+* EC2 Instance Setup
+** Launch EC2 Instance
+1. Go to AWS Console > EC2
+2. Click "Launch Instance"
+3. Choose Amazon Linux 2023
+4. Select t2.micro (free tier eligible)
+5. Configure security group:
+   - Allow SSH (port 22)
+   - Allow HTTP (port 80)
+   - Allow HTTPS (port 443)
+   - Allow custom TCP (port 8080)
+6. Create or select existing key pair
+7. Launch instance
+
+** Install Required Software
+#+BEGIN_SRC bash
+# Update system
+sudo yum update -y
+
+# Install Docker and Docker Compose
+sudo yum install -y docker
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker ec2-user
+
+# Fix iptables issues
+sudo yum install -y iptables-services
+sudo systemctl enable iptables
+sudo systemctl start iptables
+sudo iptables -F
+sudo service docker restart
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Create project directory with correct permissions
+sudo mkdir -p /home/ec2-user/jaydenblog
+sudo chown -R ec2-user:ec2-user /home/ec2-user/jaydenblog
+cd /home/ec2-user/jaydenblog
+
+# Clone repository
+git clone https://github.com/jayden-dang/backend-jaydendang.git .
+
+# Set correct permissions for the cloned repository
+sudo chown -R ec2-user:ec2-user .
+#+END_SRC
+
+** Development Mode Setup
+#+BEGIN_SRC bash
+# Create development environment file
+cat > .env << 'EOF'
+INIT_DB=true
+POSTGRES_USER=jayden
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=jaydenblog
+EOF
+
+# Ensure Docker network exists
+docker network create docker_default || true
+
+# Start development environment
+docker-compose -f deployment/docker/docker-compose.postgres.yml up -d
+
+# Verify services are running
+docker-compose -f deployment/docker/docker-compose.postgres.yml ps
+
+# Check database initialization
+docker-compose -f deployment/docker/docker-compose.postgres.yml logs postgres
+#+END_SRC
+
+** Database Management in Development
+*** Quick Reset Commands
+For development purposes, you can use these commands to reset both databases:
+
+#+BEGIN_SRC bash
+# Reset PostgreSQL Database
+sudo -u ec2-user /home/ec2-user/db-manage.sh reset
+
+# Reset Redis Database
+sudo -u ec2-user /home/ec2-user/redis-manage.sh reset
+
+# Reset Both Databases
+sudo -u ec2-user /home/ec2-user/reset-all.sh
+#+END_SRC
+
+*** Automated Database Initialization
+The development environment is configured to automatically initialize databases:
+
+1. PostgreSQL:
+   - Database is created automatically
+   - Initial schema is applied from SQL files
+   - Sample data is loaded if available
+
+2. Redis:
+   - Redis instance is started automatically
+   - Default configuration is applied
+   - No initial data is loaded
+
+To disable automatic initialization in production:
+#+BEGIN_SRC bash
+# Create production environment file
+cat > .env << 'EOF'
+INIT_DB=false
+POSTGRES_USER=jayden
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=jayden-blog
+EOF
+
+# Start production environment
+docker-compose -f deployment/docker/docker-compose.postgres.yml up -d
+#+END_SRC
+
+** Configure PostgreSQL
+#+BEGIN_SRC bash
+# Initialize database
+sudo postgresql-setup --initdb
+
+# Edit pg_hba.conf
+sudo vim /var/lib/pgsql/data/pg_hba.conf
+# Change authentication method from 'ident' to 'md5' for local connections
+
+# Edit postgresql.conf
+sudo vim /var/lib/pgsql/data/postgresql.conf
+# Set listen_addresses = 'localhost'
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+
+# Create database and user
+sudo -u postgres psql -c "CREATE USER jayden WITH PASSWORD 'postgres';"
+sudo -u postgres psql -c "CREATE DATABASE jaydenblog;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE jaydenblog TO jayden;"
+#+END_SRC
+
+* Database Management
+** Deployment Options
+There are two ways to deploy databases in this project:
+
+1. Using Docker (Recommended for Development):
+   - PostgreSQL and Redis run in Docker containers
+   - Easy to manage and reset
+   - Isolated environment
+   - No need to install PostgreSQL or Redis on the host machine
+
+2. Native Installation (Alternative for Production):
+   - PostgreSQL and Redis installed directly on the host
+   - Better performance
+   - More control over configuration
+   - Requires manual management
+
+** Using Docker (Option 1 - Recommended for Development)
+#+BEGIN_SRC bash
+# Start all services including databases
+docker-compose -f deployment/docker/docker-compose.postgres.yml up -d
+
+# Verify services
+docker-compose -f deployment/docker/docker-compose.postgres.yml ps
+
+# View logs
+docker-compose -f deployment/docker/docker-compose.postgres.yml logs
+#+END_SRC
+
+*** Database Management with Docker
+#+BEGIN_SRC bash
+# Reset PostgreSQL data
+docker-compose -f deployment/docker/docker-compose.postgres.yml down -v
+docker-compose -f deployment/docker/docker-compose.postgres.yml up -d
+
+# Reset Redis data
+docker-compose -f deployment/docker/docker-compose.postgres.yml exec redis redis-cli FLUSHALL
+
+# View PostgreSQL logs
+docker-compose -f deployment/docker/docker-compose.postgres.yml logs postgres
+
+# View Redis logs
+docker-compose -f deployment/docker/docker-compose.postgres.yml logs redis
+#+END_SRC
+
+** Native Installation (Option 2 - Alternative for Production)
+If you prefer to run databases directly on the host machine, follow these steps:
+
+*** Install PostgreSQL
+#+BEGIN_SRC bash
+# Install PostgreSQL
+sudo yum install -y postgresql13-server
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
+
+# Configure PostgreSQL
+sudo postgresql-setup --initdb
+sudo -u postgres psql -c "CREATE USER jayden WITH PASSWORD 'postgres';"
+sudo -u postgres psql -c "CREATE DATABASE jaydenblog;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE jaydenblog TO jayden;"
+#+END_SRC
+
+*** Install Redis
+#+BEGIN_SRC bash
+# Install Redis
+sudo yum clean metadata
+sudo yum update -y
+sudo amazon-linux-extras install redis6
+sudo systemctl enable redis
+sudo systemctl start redis
+#+END_SRC
+
+*** Database Management Scripts
+The management scripts (db-manage.sh and redis-manage.sh) are designed for native installation.
+If using Docker, use the Docker commands shown above instead.
+
+** Quick Reset Commands
+For development purposes, you can use these commands to reset both databases:
+
+*** Reset PostgreSQL Database
+#+BEGIN_SRC bash
+# This will backup current data and reset the database
+sudo -u ec2-user /home/ec2-user/db-manage.sh reset
+#+END_SRC
+
+*** Reset Redis Database
+#+BEGIN_SRC bash
+# This will backup current data and reset Redis
+sudo -u ec2-user /home/ec2-user/redis-manage.sh reset
+#+END_SRC
+
+*** Reset Both Databases
+#+BEGIN_SRC bash
+# Create a combined reset script
+sudo tee /home/ec2-user/reset-all.sh << 'EOF'
+#!/bin/bash
+
+echo "Resetting all databases..."
+
+# Reset PostgreSQL
+echo "Resetting PostgreSQL..."
+sudo -u ec2-user /home/ec2-user/db-manage.sh reset
+
+# Reset Redis
+echo "Resetting Redis..."
+sudo -u ec2-user /home/ec2-user/redis-manage.sh reset
+
+echo "All databases have been reset!"
+EOF
+
+# Set permissions
+sudo chmod +x /home/ec2-user/reset-all.sh
+sudo chown ec2-user:ec2-user /home/ec2-user/reset-all.sh
+
+# Usage
+sudo -u ec2-user /home/ec2-user/reset-all.sh
+#+END_SRC
+
+** Database Management Scripts
+*** PostgreSQL Management
+#+BEGIN_SRC bash
+# Reset Database (creates empty database)
+sudo -u ec2-user /home/ec2-user/db-manage.sh reset
+
+# Create Backup
+sudo -u ec2-user /home/ec2-user/db-manage.sh backup
+
+# List Backups
+sudo -u ec2-user /home/ec2-user/db-manage.sh list
+
+# Restore from Backup
+sudo -u ec2-user /home/ec2-user/db-manage.sh restore /home/ec2-user/backups/jaydenblog_20250528_021352.sql
+#+END_SRC
+
+*** Redis Management
+#+BEGIN_SRC bash
+# Reset Redis (creates empty Redis instance)
+sudo -u ec2-user /home/ec2-user/redis-manage.sh reset
+
+# Create Backup
+sudo -u ec2-user /home/ec2-user/redis-manage.sh backup
+
+# List Backups
+sudo -u ec2-user /home/ec2-user/redis-manage.sh list
+
+# Restore from Backup
+sudo -u ec2-user /home/ec2-user/redis-manage.sh restore /home/ec2-user/redis-backups/redis_20250528_021352.rdb
+
+# Monitor Redis
+sudo -u ec2-user /home/ec2-user/redis-manage.sh monitor
+#+END_SRC
+
+** Backup Strategy
+*** Automated Backup
+The system is configured to create backups every 7 days using crontab:
+
+#+BEGIN_SRC bash
+# Edit crontab
+crontab -e
+
+# Add these lines
+0 0 */7 * * /home/ec2-user/db-manage.sh backup
+0 2 * * * /home/ec2-user/redis-manage.sh backup
+#+END_SRC
+
+*** Manual Backup
+You can create manual backups at any time using:
+#+BEGIN_SRC bash
+# Backup PostgreSQL
+sudo -u ec2-user /home/ec2-user/db-manage.sh backup
+
+# Backup Redis
+sudo -u ec2-user /home/ec2-user/redis-manage.sh backup
+#+END_SRC
+
+*** Backup Locations
+- PostgreSQL backups: =/home/ec2-user/backups/= (format: =jaydenblog_YYYYMMDD_HHMMSS.sql=)
+- Redis backups: =/home/ec2-user/redis-backups/= (format: =redis_YYYYMMDD_HHMMSS.rdb=)
+
+*** Backup Retention
+The system keeps the last 4 backups for each database (approximately 1 month of weekly backups) to save disk space during development.
+
+* Redis Deployment
+** Development Environment
+Currently, Redis is deployed on the same EC2 instance as the application for development purposes. This setup includes:
+
+1. Redis running in a Docker container
+2. Local connection with low latency
+3. Simple backup and monitoring setup
+
+** Redis Setup on Amazon Linux
+1. Install Redis:
+#+BEGIN_SRC bash
+# Update system
+sudo yum clean metadata
+sudo yum update -y
+
+# Install Redis
+sudo amazon-linux-extras install redis6
+
+# Enable and start Redis service
+sudo systemctl enable redis
+sudo systemctl start redis
+
+# Verify Redis is running
+sudo systemctl status redis
+#+END_SRC
+
+2. Configure Redis:
+#+BEGIN_SRC bash
+# Backup default config
+sudo cp /etc/redis/redis.conf /etc/redis/redis.conf.backup
+
+# Edit Redis configuration
+sudo vim /etc/redis/redis.conf
+
+# Important settings to modify:
+# bind 127.0.0.1
+# port 6379
+# requirepass your_strong_password
+# maxmemory 256mb
+# maxmemory-policy allkeys-lru
+# appendonly yes
+# appendfilename "appendonly.aof"
+#+END_SRC
+
+3. Create Redis Management Script:
+#+BEGIN_SRC bash
+sudo tee /home/ec2-user/redis-manage.sh << 'EOF'
+#!/bin/bash
+
+# Redis configuration
+REDIS_PASSWORD="your_strong_password"
+BACKUP_DIR="/home/ec2-user/redis-backups"
+LOG_FILE="/home/ec2-user/redis-manage.log"
+
+# Log function
+log() {
+    echo "$(date): $1" >> $LOG_FILE
+    echo "$(date): $1"
+}
+
+# Function to backup Redis
+backup_redis() {
+    log "Creating Redis backup..."
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    redis-cli -a $REDIS_PASSWORD SAVE
+    sudo cp /var/lib/redis/dump.rdb $BACKUP_DIR/redis_$TIMESTAMP.rdb
+    if [ $? -eq 0 ]; then
+        log "Backup created successfully: redis_$TIMESTAMP.rdb"
+    else
+        log "Backup failed!"
+        exit 1
+    fi
+}
+
+# Function to restore from backup
+restore_redis() {
+    if [ -z "$1" ]; then
+        log "Please specify backup file to restore"
+        echo "Available backups:"
+        ls -l $BACKUP_DIR/redis_*.rdb
+        exit 1
+    fi
+
+    BACKUP_FILE="$1"
+    if [ ! -f "$BACKUP_FILE" ]; then
+        log "Backup file not found: $BACKUP_FILE"
+        exit 1
+    fi
+
+    log "Restoring from backup: $BACKUP_FILE"
+    sudo systemctl stop redis
+    sudo cp $BACKUP_FILE /var/lib/redis/dump.rdb
+    sudo chown redis:redis /var/lib/redis/dump.rdb
+    sudo systemctl start redis
+
+    if [ $? -eq 0 ]; then
+        log "Redis restored successfully"
+    else
+        log "Redis restore failed!"
+        exit 1
+    fi
+}
+
+# Function to list backups
+list_backups() {
+    log "Available Redis backups:"
+    ls -l $BACKUP_DIR/redis_*.rdb
+}
+
+# Function to monitor Redis
+monitor_redis() {
+    log "Monitoring Redis..."
+    redis-cli -a $REDIS_PASSWORD info
+}
+
+# Function to reset Redis
+reset_redis() {
+    log "Resetting Redis..."
+
+    # Stop Redis
+    sudo systemctl stop redis
+
+    # Remove all Redis data files
+    sudo rm -f /var/lib/redis/dump.rdb
+    sudo rm -f /var/lib/redis/appendonly.aof
+
+    # Start Redis
+    sudo systemctl start redis
+
+    if [ $? -eq 0 ]; then
+        log "Redis reset successfully"
+    else
+        log "Redis reset failed!"
+        exit 1
+    fi
+}
+
+# Main script
+case "$1" in
+    "backup")
+        backup_redis
+        ;;
+    "restore")
+        restore_redis "$2"
+        ;;
+    "list")
+        list_backups
+        ;;
+    "monitor")
+        monitor_redis
+        ;;
+    "reset")
+        backup_redis  # Create backup before reset
+        reset_redis
+        ;;
+    *)
+        echo "Usage: $0 {backup|restore|list|monitor|reset}"
+        echo "  backup  - Create a new Redis backup"
+        echo "  restore <backup_file> - Restore from backup"
+        echo "  list    - List all available backups"
+        echo "  monitor - Show Redis status and metrics"
+        echo "  reset   - Backup current data and reset Redis"
+        exit 1
+        ;;
+esac
+EOF
+
+# Set permissions
+sudo chmod +x /home/ec2-user/redis-manage.sh
+sudo chown ec2-user:ec2-user /home/ec2-user/redis-manage.sh
+
+# Create backup directory
+sudo mkdir -p /home/ec2-user/redis-backups
+sudo chown ec2-user:ec2-user /home/ec2-user/redis-backups
+#+END_SRC
+
+4. Setup Automated Backups:
+#+BEGIN_SRC bash
+# Edit crontab
+crontab -e
+
+# Add this line for daily backups at 2 AM
+0 2 * * * /home/ec2-user/redis-manage.sh backup
+#+END_SRC
+
+5. Verify Redis Connection:
+#+BEGIN_SRC bash
+# Test Redis connection (not recommended for production)
+redis-cli -a your_strong_password ping
+
+# Should return PONG
+# Note: Using password on command line is not secure for production
+
+# More secure way to test connection
+redis-cli
+> AUTH your_strong_password
+> PING
+# Should return PONG
+
+# Check Redis info
+redis-cli
+> AUTH your_strong_password
+> INFO
+#+END_SRC
+
+6. Security Considerations:
+#+BEGIN_SRC bash
+# Configure firewall
+sudo yum install -y firewalld
+sudo systemctl enable firewalld
+sudo systemctl start firewalld
+
+# Allow Redis port only from localhost
+sudo firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="127.0.0.1" port protocol="tcp" port="6379" accept'
+sudo firewall-cmd --reload
+
+# Verify firewall rules
+sudo firewall-cmd --list-all
+
+# Additional security recommendations:
+# 1. Use strong password
+# 2. Disable dangerous commands
+# 3. Enable protected mode
+# 4. Use SSL/TLS if possible
+# 5. Regular security updates
+#+END_SRC
+
+To start Redis in development:
+#+BEGIN_SRC bash
+docker run -d \
+  --name redis \
+  --restart unless-stopped \
+  --network host \
+  -v /var/lib/redis:/data \
+  redis:7.2-alpine \
+  redis-server /etc/redis/redis.conf
+#+END_SRC
+
+** Production Migration Guide
+When moving to production, it's recommended to migrate to AWS ElastiCache for better reliability and scalability. Here's the migration process:
+
+1. Create ElastiCache Cluster:
+   - Choose Redis engine
+   - Select appropriate node type
+   - Enable Multi-AZ for high availability
+   - Configure security groups
+   - Set up backup and maintenance windows
+
+2. Update Environment Variables:
+   - Change REDIS_URL to point to ElastiCache endpoint
+   - Update security groups to allow access
+   - Configure Redis password if needed
+
+3. Data Migration:
+   - Use redis-cli to export data from development Redis
+   - Import data to ElastiCache
+   - Verify data integrity
+
+4. Update Application Configuration:
+   - Modify connection settings
+   - Update health checks
+   - Adjust timeouts and retry policies
+
+5. Monitoring Setup:
+   - Configure CloudWatch alarms
+   - Set up Redis metrics monitoring
+   - Create backup schedules
+
+Example ElastiCache configuration:
+#+BEGIN_SRC yaml
+Resources:
+  RedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.t3.micro
+      NumCacheNodes: 1
+      Port: 6379
+      VpcSecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      Tags:
+        - Key: Environment
+          Value: Production
+#+END_SRC
+
+** Monitoring and Maintenance
+1. Regular Tasks:
+   - Monitor memory usage
+   - Check connection counts
+   - Review slow queries
+   - Verify backup success
+
+2. Performance Optimization:
+   - Adjust maxmemory policy
+   - Configure persistence
+   - Optimize key patterns
+   - Monitor hit/miss ratios
+
+3. Security Considerations:
+   - Enable encryption in transit
+   - Use strong passwords
+   - Regular security updates
+   - Access control management

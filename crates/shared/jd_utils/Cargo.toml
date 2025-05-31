@@ -1,0 +1,19 @@
+[package]
+name = "jd_utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# -- Core Utilities
+derive_more.workspace = true
+serde.workspace = true
+serde_with.workspace = true
+
+# -- Time
+time.workspace = true
+
+# -- Configuration
+config.workspace = true
+
+# -- Validation & Parsing
+regex.workspace = true

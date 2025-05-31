@@ -1,0 +1,271 @@
+[env] ## tells cargo make that we're in the context of a Cargo workspace
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[config] ## we want most/all of our tasks to run in the context of a workspace
+default_to_workspace = false
+
+# ============================================================================
+# DEVELOPMENT TASKS - Optimized Logging
+# ============================================================================
+
+[tasks.dev]
+description = "Development mode with trace-level application logs, filtered external noise"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.dev.env]
+ENVIRONMENT = "development"
+
+[tasks.dev-quiet] 
+description = "Quiet development mode - essential logs only"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.dev-quiet.env]
+ENVIRONMENT = "development"
+
+[tasks.dev-info]
+description = "Development with info-level application logs"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.dev-info.env]
+ENVIRONMENT = "development"
+
+[tasks.dev-debug]
+description = "Full debug mode - all logs including external dependencies"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.dev-debug.env]
+ENVIRONMENT = "development"
+
+# ============================================================================
+# ENVIRONMENT-SPECIFIC TASKS
+# ============================================================================
+
+[tasks.staging]
+description = "Staging environment with balanced logging"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.staging.env]
+ENVIRONMENT = "staging"
+
+[tasks.production]
+description = "Production environment with minimal, essential logging"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.production.env]
+ENVIRONMENT = "production"
+
+[tasks.test-env]
+description = "Testing environment with minimal output"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.test-env.env]
+ENVIRONMENT = "testing"
+
+# ============================================================================
+# SPECIALIZED DEBUG TASKS
+# ============================================================================
+
+[tasks.debug-db]
+description = "Debug database operations"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.debug-db.env]
+ENVIRONMENT = "development"
+
+[tasks.debug-sui]
+description = "Debug Sui RPC operations"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.debug-sui.env]
+ENVIRONMENT = "development"
+
+[tasks.debug-auth]
+description = "Debug authentication and middleware"
+install_crate = "cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+
+[tasks.debug-auth.env]
+ENVIRONMENT = "development"
+
+# ============================================================================
+# COMPOSITE TASKS
+# ============================================================================
+
+[tasks.run-all]
+description = "Start all required services and run the application (development mode)"
+dependencies = ["db-start", "redis-up"]
+script = [
+    "echo '🚀 Starting all services in development mode...'",
+    "cargo make dev"
+]
+
+[tasks.run-quiet]
+description = "Start all services with quiet logging"
+dependencies = ["db-start", "redis-up"]
+script = [
+    "echo '🔇 Starting all services with quiet logging...'",
+    "cargo make dev-quiet"
+]
+
+[tasks.run-staging]
+description = "Start all services and run in staging environment"
+dependencies = ["db-start", "redis-up"]
+script = [
+    "echo '🏗️  Starting staging environment...'",
+    "cargo make staging"
+]
+
+[tasks.run-production]
+description = "Start all services and run in production environment"
+dependencies = ["db-start", "redis-up"]
+script = [
+    "echo '🏭 Starting production environment...'",
+    "cargo make production"
+]
+
+# ============================================================================
+# LEGACY TASKS (for backward compatibility)
+# ============================================================================
+
+[tasks.debug]
+description = "Legacy debug task - use dev-debug instead"
+install_crate="cargo-watch"
+cwd = "./crates/gateways/web_server"
+command = "cargo"
+args = ["watch", "-x", "clippy", "-x", "run"]
+env = { RUST_LOG = "debug" }
+
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.fix]
+command = "cargo"
+args = ["fix","--allow-dirty"]
+
+[tasks.lint]
+command = "cargo"
+args = ["clippy"]
+
+[tasks.lint-staged]
+command = "npx"
+args = ["lint-staged"]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build]
+command = "cargo"
+args = ["build" , "--release"]
+
+[tasks.test]
+command = "cargo"
+args = ["nextest", "run"]
+
+[tasks.test-watch]
+install_crate = "cargo-watch"
+command = "cargo"
+args = ["watch", "-x", "test"]
+
+# ================================
+# Database Management Tasks
+# ================================
+
+[tasks.db-start]
+description = "Start PostgreSQL database container"
+command = "docker"
+args = ["compose","-f", "deployment/docker/docker-compose.postgres.yml","up", "-d", "--build"]
+
+[tasks.db-build]
+description = "Build PostgreSQL database image"
+command = "docker"
+args = ["compose", "-f", "deployment/docker/docker-compose.postgres.yml", "build"]
+
+[tasks.db-restart]
+description = "Rebuild and start PostgreSQL database container"
+command = "docker"
+args = ["compose", "-f", "deployment/docker/docker-compose.postgres.yml", "up", "-d", "--build"]
+
+[tasks.db-stop]
+description = "Stop PostgreSQL database container"
+command = "docker"
+args = ["compose", "-f", "deployment/docker/docker-compose.postgres.yml", "down"]
+
+[tasks.db-logs]
+description = "View PostgreSQL database logs"
+command = "docker"
+args = ["compose", "-f", "deployment/docker/docker-compose.postgres.yml", "logs", "-f", "database"]
+
+[tasks.db-shell]
+description = "Connect to PostgreSQL database shell"
+command = "docker"
+args = ["compose", "-f", "deployment/docker/docker-compose.postgres.yml", "exec", "database", "psql", "-U", "jayden", "-d", "jayden-blog"]
+
+[tasks.db-reset]
+description = "Reset PostgreSQL database completely"
+script = [
+    "docker compose -f deployment/docker/docker-compose.postgres.yml down -v",
+    "docker volume rm my_pgdata 2>/dev/null || true",
+    "docker compose -f deployment/docker/docker-compose.postgres.yml up -d --build"
+]
+
+[tasks.db-fresh]
+description = "Fresh database setup"
+dependencies = ["db-reset"]
+script = [
+    "echo 'Database reset complete'",
+    "sleep 5",
+    "docker compose -f deployment/docker/docker-compose.postgres.yml logs database"
+]
+
+
+# ================================
+# Redis Management Tasks
+# ================================
+
+[tasks.redis-up]
+description = "Start Redis with Docker Compose"
+cwd = "./deployment/docker"
+command = "docker-compose"
+args = ["up", "-d", "redis"]
+
+[tasks.redis-down]
+description = "Stop Redis container"
+cwd = "./deployment/docker"
+command = "docker-compose"
+args = ["stop", "redis"]
+
+[tasks.redis-restart]
+description = "Restart Redis container"
+dependencies = ["redis-down", "redis-up"]

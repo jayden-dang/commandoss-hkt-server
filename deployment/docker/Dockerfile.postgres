@@ -1,0 +1,13 @@
+FROM postgres:16-alpine
+
+ENV POSTGRES_USER=jayden
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=jaydenblog
+
+RUN mkdir -p /docker-entrypoint-initdb.d
+
+# Chỉ cần copy SQL files - PostgreSQL tự chạy
+COPY sql/*.sql /docker-entrypoint-initdb.d/
+
+EXPOSE 5432
+# Không cần init.sh, không cần CMD

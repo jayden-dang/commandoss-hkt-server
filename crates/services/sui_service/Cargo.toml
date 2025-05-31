@@ -1,0 +1,52 @@
+[package]
+name = "sui_service"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# -- Web Framework
+axum.workspace = true
+
+# -- Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# -- Async & Utilities
+async-trait.workspace = true
+tokio.workspace = true
+futures.workspace = true
+
+# -- Error Handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# -- Caching
+redis.workspace = true
+
+# -- Time & Date
+chrono.workspace = true
+
+# -- Database
+sqlx.workspace = true
+
+# -- Utilities
+uuid.workspace = true
+
+# -- Logging
+tracing.workspace = true
+
+# -- Cryptography & Encoding
+base64.workspace = true
+hex.workspace = true
+blake2.workspace = true
+bcs.workspace = true
+
+# -- Blockchain & SUI Integration
+sui-sdk.workspace = true
+sui-keys.workspace = true
+sui-types.workspace = true
+fastcrypto.workspace = true
+
+# -- Internal Dependencies
+jd_core = { path = "../../core/jd_core" }
+jd_utils = { path = "../../shared/jd_utils" }

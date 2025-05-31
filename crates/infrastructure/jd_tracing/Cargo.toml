@@ -1,0 +1,30 @@
+[package]
+name = "jd_tracing"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# -- Web Framework
+axum.workspace = true
+
+# -- Serialization
+serde.workspace = true
+serde_with.workspace = true
+serde_json.workspace = true
+
+# -- Time & Date
+chrono.workspace = true
+
+# -- Utilities
+uuid.workspace = true
+
+# -- Error Handling
+color-eyre.workspace = true
+
+# -- Logging & Tracing
+tracing.workspace = true
+tracing-error.workspace = true
+tracing-subscriber.workspace = true
+
+# -- Internal Dependencies
+jd_utils = { path = "../../shared/jd_utils" }
