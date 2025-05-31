@@ -3,7 +3,7 @@
 
 -- Table: behavior_inputs
 -- Stores user behavior data for scoring
-CREATE TABLE behavior_inputs (
+CREATE TABLE IF NOT EXISTS behavior_inputs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id VARCHAR(100),
     input_data JSONB NOT NULL,
@@ -14,13 +14,13 @@ CREATE TABLE behavior_inputs (
     CONSTRAINT behavior_inputs_session_id_check CHECK (session_id IS NULL OR LENGTH(session_id) >= 1)
 );
 
-CREATE INDEX idx_behavior_inputs_session_id ON behavior_inputs(session_id);
-CREATE INDEX idx_behavior_inputs_timestamp ON behavior_inputs(timestamp);
-CREATE INDEX idx_behavior_inputs_processed ON behavior_inputs(processed);
+CREATE INDEX IF NOT EXISTS idx_behavior_inputs_session_id ON behavior_inputs(session_id);
+CREATE INDEX IF NOT EXISTS idx_behavior_inputs_timestamp ON behavior_inputs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_behavior_inputs_processed ON behavior_inputs(processed);
 
 -- Table: scoring_results  
 -- Stores AI model scoring results
-CREATE TABLE scoring_results (
+CREATE TABLE IF NOT EXISTS scoring_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     behavior_input_id UUID NOT NULL REFERENCES behavior_inputs(id) ON DELETE CASCADE,
     score DECIMAL(5,2) NOT NULL,
@@ -32,14 +32,14 @@ CREATE TABLE scoring_results (
     CONSTRAINT scoring_results_model_version_check CHECK (LENGTH(model_version) >= 1)
 );
 
-CREATE INDEX idx_scoring_results_behavior_input_id ON scoring_results(behavior_input_id);
-CREATE INDEX idx_scoring_results_score ON scoring_results(score);
-CREATE INDEX idx_scoring_results_model_version ON scoring_results(model_version);
-CREATE INDEX idx_scoring_results_timestamp ON scoring_results(timestamp);
+CREATE INDEX IF NOT EXISTS idx_scoring_results_behavior_input_id ON scoring_results(behavior_input_id);
+CREATE INDEX IF NOT EXISTS idx_scoring_results_score ON scoring_results(score);
+CREATE INDEX IF NOT EXISTS idx_scoring_results_model_version ON scoring_results(model_version);
+CREATE INDEX IF NOT EXISTS idx_scoring_results_timestamp ON scoring_results(timestamp);
 
 -- Table: zkml_proofs
 -- Stores ZK proofs and verification data
-CREATE TABLE zkml_proofs (
+CREATE TABLE IF NOT EXISTS zkml_proofs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     scoring_result_id UUID NOT NULL REFERENCES scoring_results(id) ON DELETE CASCADE,
     proof_data BYTEA NOT NULL,
@@ -54,10 +54,10 @@ CREATE TABLE zkml_proofs (
     CONSTRAINT zkml_proofs_tx_hash_check CHECK (blockchain_tx_hash IS NULL OR LENGTH(blockchain_tx_hash) >= 1)
 );
 
-CREATE INDEX idx_zkml_proofs_scoring_result_id ON zkml_proofs(scoring_result_id);
-CREATE INDEX idx_zkml_proofs_verified ON zkml_proofs(verified);
-CREATE INDEX idx_zkml_proofs_blockchain_tx_hash ON zkml_proofs(blockchain_tx_hash);
-CREATE INDEX idx_zkml_proofs_timestamp ON zkml_proofs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_zkml_proofs_scoring_result_id ON zkml_proofs(scoring_result_id);
+CREATE INDEX IF NOT EXISTS idx_zkml_proofs_verified ON zkml_proofs(verified);
+CREATE INDEX IF NOT EXISTS idx_zkml_proofs_blockchain_tx_hash ON zkml_proofs(blockchain_tx_hash);
+CREATE INDEX IF NOT EXISTS idx_zkml_proofs_timestamp ON zkml_proofs(timestamp);
 
 -- Comments for documentation
 COMMENT ON TABLE behavior_inputs IS 'Stores user behavior data for ZK-ML processing';

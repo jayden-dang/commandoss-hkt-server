@@ -11,6 +11,16 @@ pub struct WebConfig {
 pub struct Postgres {
   pub dsn: String,
   pub max_conns: u32,
+  pub min_conns: Option<u32>,
+  pub connect_timeout_secs: Option<u64>,
+  pub idle_timeout_secs: Option<u64>,
+  pub max_lifetime_secs: Option<u64>,
+  pub ssl_mode: Option<String>,
+  pub auto_migrate: Option<bool>,
+  pub enable_transactions: Option<bool>,
+  pub test_connection: Option<bool>,
+  pub retry_attempts: Option<u32>,
+  pub retry_delay_ms: Option<u64>,
 }
 
 #[derive(Deserialize)]

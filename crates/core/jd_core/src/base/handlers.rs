@@ -1,8 +1,8 @@
-use crate::AppState;
 use crate::ctx::Ctx;
+use crate::AppState;
 use async_trait::async_trait;
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use std::sync::Arc;
 use validator::Validate;
 

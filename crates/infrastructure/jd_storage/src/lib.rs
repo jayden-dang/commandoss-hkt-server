@@ -1,17 +1,15 @@
+pub mod config;
 pub mod dbx;
 pub mod repository;
 pub mod utils;
 
-use jd_utils::config::Config;
-use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
+// Re-export commonly used types
+pub use config::{
+    new_db_pool, new_db_pool_with_config, 
+    DatabaseConfig, DatabaseManager, DatabaseStats, HealthStatus
+};
+pub use dbx::{Dbx, Error as DbxError, Result as DbxResult};
+
+use sqlx::{Pool, Postgres};
 
 pub type Db = Pool<Postgres>;
-
-pub async fn new_db_pool() -> sqlx::Result<Db> {
-  let cfg = Config::from_env().expect("Cannot load env");
-
-  PgPoolOptions::new()
-    .max_connections(cfg.postgres.max_conns)
-    .connect(&cfg.postgres.dsn)
-    .await
-}

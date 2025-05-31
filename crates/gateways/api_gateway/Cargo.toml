@@ -59,6 +59,7 @@ sui-sdk.workspace = true
 jd_core = { path = "../../core/jd_core" }
 jd_utils = { path = "../../shared/jd_utils" }
 jd_domain = { path = "../../shared/jd_domain" }
+jd_storage = { path = "../../infrastructure/jd_storage" }
 
 # -- Internal Dependencies - Services
 behavior_service = { path = "../../services/behavior_service" }

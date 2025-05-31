@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use jd_storage::dbx;
 use serde::Serialize;
-use serde_with::{DisplayFromStr, serde_as};
+use serde_with::{serde_as, DisplayFromStr};
 use sqlx::error::DatabaseError;
 
 pub type Result<T> = std::result::Result<T, Error>;

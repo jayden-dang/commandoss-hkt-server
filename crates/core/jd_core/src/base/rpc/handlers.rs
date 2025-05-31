@@ -3,7 +3,7 @@ use axum::extract::State;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use rpc_router::resources_builder;
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::sync::Arc;
 
 /// RPC ID and Method Capture

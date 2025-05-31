@@ -6,10 +6,16 @@ edition = "2024"
 [dependencies]
 # -- Database
 sqlx.workspace = true
+sea-query.workspace = true
+sea-query-binder.workspace = true
+
+# -- Time
+chrono.workspace = true
 
 # -- Async & Utilities
 tokio.workspace = true
 async-trait.workspace = true
+uuid.workspace = true
 
 # -- Serialization
 serde.workspace = true
@@ -27,3 +33,4 @@ tracing.workspace = true
 
 # -- Internal Dependencies
 jd_utils = { path = "../../shared/jd_utils" }
+jd_domain = { path = "../../shared/jd_domain" }

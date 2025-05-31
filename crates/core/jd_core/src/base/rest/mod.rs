@@ -3,7 +3,7 @@ pub mod macros_utils;
 use std::collections::HashSet;
 
 use crate::Result;
-use crate::{ModelManager, error::Error};
+use crate::{error::Error, ModelManager};
 use modql::{
   field::HasSeaFields,
   filter::{FilterGroups, ListOptions},
@@ -13,7 +13,7 @@ use sea_query_binder::{SqlxBinder, SqlxValues};
 use sqlx::{postgres::PgRow, prelude::FromRow};
 use uuid::Uuid;
 
-use super::{DMC, LIST_LIMIT_DEFAULT, LIST_LIMIT_MAX, PaginationMetadata};
+use super::{PaginationMetadata, DMC, LIST_LIMIT_DEFAULT, LIST_LIMIT_MAX};
 
 #[derive(Debug, Clone)]
 pub struct PgEnum {
@@ -511,7 +511,11 @@ where
   let sqlx_query = sqlx::query_with(&sql, values);
   let result = db.dbx().execute(sqlx_query).await?;
 
-  if result == 0 { Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 }) } else { Ok(()) }
+  if result == 0 {
+    Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 })
+  } else {
+    Ok(())
+  }
 }
 
 /// Deletes a single record by its ID
@@ -550,7 +554,11 @@ where
   let sqlx_query = sqlx::query_with(&sql, values);
   let result = db.dbx().execute(sqlx_query).await?;
 
-  if result == 0 { Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 }) } else { Ok(()) }
+  if result == 0 {
+    Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 })
+  } else {
+    Ok(())
+  }
 }
 
 /// Deletes multiple records by their IDs
@@ -593,7 +601,11 @@ pub async fn delete_many<MC: DMC>(db: &ModelManager, ids: Vec<Uuid>) -> Result<(
   let sqlx_query = sqlx::query_with(&sql, values);
   let result = db.dbx().execute(sqlx_query).await?;
 
-  if result == 0 { Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 }) } else { Ok(()) }
+  if result == 0 {
+    Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 })
+  } else {
+    Ok(())
+  }
 }
 
 /// Computes list options for pagination
@@ -685,7 +697,11 @@ where
   let sqlx_query = sqlx::query_with(&sql, values);
   let result = db.dbx().execute(sqlx_query).await?;
 
-  if result == 0 { Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 }) } else { Ok(()) }
+  if result == 0 {
+    Err(Error::EntityNotFound { entity: MC::TABLE, id: 0 })
+  } else {
+    Ok(())
+  }
 }
 
 /// Checks if any record exists in the database matching the given filter

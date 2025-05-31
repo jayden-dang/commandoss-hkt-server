@@ -21,6 +21,13 @@ validator.workspace = true
 
 # -- Time
 time.workspace = true
+chrono.workspace = true
+
+# -- Decimal arithmetic for precision
+rust_decimal.workspace = true
+
+# -- Error handling
+thiserror.workspace = true
 
 # -- Internal Dependencies
 jd_utils = { path = "../jd_utils" }

@@ -42,8 +42,6 @@ pub struct AppState {
   pub redis: Arc<RedisClient>,
   pub sui_client: Arc<sui::sui_client::SuiClient>,
   pub config: Arc<Config>,
-  // TODO: S3 Service
-  // TODO: Email Service
 }
 
 impl AppState {
