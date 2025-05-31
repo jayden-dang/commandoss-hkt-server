@@ -1,16 +1,18 @@
 use async_trait::async_trait;
-use jd_core::AppState;
+use jd_core::{AppState, base};
 use jd_domain::Id;
 use jd_domain::zkpersona_domain::profile::ZkProof;
-use jd_utils::time::now_utc;
-use sqlx::Row;
 
-use crate::domain::zkproof_repository_trait::ZkProofRepository;
-use crate::models::{
-    requests::ProofQueryRequest,
-    responses::{ZkProofResponse, ZkProofListResponse},
+use crate::{
+    ZkProofDmc,
+    domain::zkproof_repository_trait::ZkProofRepository,
+    models::{
+        requests::ProofQueryRequest,
+        responses::{ZkProofResponse, ZkProofListResponse},
+        ZkProofRecord, ZkProofForCreate, ZkProofForUpdate, ZkProofFilter,
+    },
+    Result,
 };
-use crate::Result;
 
 #[derive(Clone)]
 pub struct ZkProofRepositoryImpl {
@@ -26,233 +28,131 @@ impl ZkProofRepositoryImpl {
 #[async_trait]
 impl ZkProofRepository for ZkProofRepositoryImpl {
     async fn create_zkproof(&self, proof: ZkProof) -> Result<ZkProofResponse> {
-        let id = Id::generate();
-        let timestamp = now_utc();
-        
-        let query = r#"
-            INSERT INTO zkml_proofs (id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-        "#;
-        
-        let row = sqlx::query(query)
-            .bind(id.value())
-            .bind(proof.scoring_result_id.value())
-            .bind(&proof.proof_data)
-            .bind(&proof.verification_key)
-            .bind(proof.verified)
-            .bind(&proof.blockchain_tx_hash)
-            .bind(timestamp)
-            .fetch_one(self.app_state.mm.dbx().db())
-            .await?;
+        let scoring_result_uuid = proof.scoring_result_id.to_uuid();
             
-        Ok(ZkProofResponse {
-            id: Id::new(row.get::<uuid::Uuid, _>("id").to_string()),
-            scoring_result_id: Id::new(row.get::<uuid::Uuid, _>("scoring_result_id").to_string()),
-            proof_data: String::from_utf8_lossy(&row.get::<Vec<u8>, _>("proof_data")).to_string(),
-            verification_key: String::from_utf8_lossy(&row.get::<Vec<u8>, _>("verification_key")).to_string(),
-            verified: row.get("verified"),
-            blockchain_tx_hash: row.get("blockchain_tx_hash"),
-            timestamp: row.get("timestamp"),
-        })
+        let create_req = ZkProofForCreate {
+            scoring_result_id: scoring_result_uuid,
+            proof_data: proof.proof_data,
+            verification_key: proof.verification_key,
+            verified: Some(proof.verified),
+            blockchain_tx_hash: proof.blockchain_tx_hash,
+        };
+        
+        let record = base::rest::create::<ZkProofDmc, _, ZkProofRecord>(
+            &self.app_state.mm, 
+            create_req
+        ).await?;
+            
+        Ok(ZkProofResponse::from(record))
     }
 
     async fn get_zkproof(&self, id: Id) -> Result<Option<ZkProofResponse>> {
-        let query = r#"
-            SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-            FROM zkml_proofs
-            WHERE id = $1
-        "#;
-        
-        let row = sqlx::query(query)
-            .bind(id.value())
-            .fetch_optional(self.app_state.mm.dbx().db())
-            .await?;
+        let id_uuid = id.to_uuid();
             
-        Ok(row.map(|r| ZkProofResponse {
-            id: Id::new(r.get::<uuid::Uuid, _>("id").to_string()),
-            scoring_result_id: Id::new(r.get::<uuid::Uuid, _>("scoring_result_id").to_string()),
-            proof_data: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("proof_data")).to_string(),
-            verification_key: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("verification_key")).to_string(),
-            verified: r.get("verified"),
-            blockchain_tx_hash: r.get("blockchain_tx_hash"),
-            timestamp: r.get("timestamp"),
-        }))
+        match base::rest::get_by_id::<ZkProofDmc, ZkProofRecord>(&self.app_state.mm, id_uuid).await {
+            Ok(record) => Ok(Some(ZkProofResponse::from(record))),
+            Err(_) => Ok(None),
+        }
     }
 
     async fn get_zkproof_by_scoring_id(&self, scoring_result_id: Id) -> Result<Option<ZkProofResponse>> {
-        let query = r#"
-            SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-            FROM zkml_proofs
-            WHERE scoring_result_id = $1
-            ORDER BY timestamp DESC
-            LIMIT 1
-        "#;
-        
-        let row = sqlx::query(query)
-            .bind(scoring_result_id.value())
-            .fetch_optional(self.app_state.mm.dbx().db())
-            .await?;
+        let scoring_result_uuid = scoring_result_id.to_uuid();
             
-        Ok(row.map(|r| ZkProofResponse {
-            id: Id::new(r.get::<uuid::Uuid, _>("id").to_string()),
-            scoring_result_id: Id::new(r.get::<uuid::Uuid, _>("scoring_result_id").to_string()),
-            proof_data: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("proof_data")).to_string(),
-            verification_key: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("verification_key")).to_string(),
-            verified: r.get("verified"),
-            blockchain_tx_hash: r.get("blockchain_tx_hash"),
-            timestamp: r.get("timestamp"),
-        }))
+        let filter = ZkProofFilter {
+            scoring_result_id: Some(vec![modql::filter::OpValValue::Eq(serde_json::Value::String(scoring_result_uuid.to_string()))].into()),
+            verified: None,
+        };
+        
+        // Use first to get the most recent result (ordered by timestamp DESC by default)
+        let list_options = modql::filter::ListOptions {
+            limit: Some(1),
+            offset: None,
+            order_bys: Some("!timestamp".into()), // ! prefix for descending
+        };
+        
+        match base::rest::first::<ZkProofDmc, _, ZkProofRecord>(&self.app_state.mm, Some(filter), Some(list_options)).await {
+            Ok(Some(record)) => Ok(Some(ZkProofResponse::from(record))),
+            Ok(None) => Ok(None),
+            Err(_) => Ok(None),
+        }
     }
 
     async fn list_zkproofs(&self, query_req: ProofQueryRequest) -> Result<ZkProofListResponse> {
         let limit = query_req.limit.unwrap_or(50).min(100);
         let offset = query_req.offset.unwrap_or(0);
         
-        // Build query and execute based on filters
-        let (rows, total) = match (&query_req.scoring_result_id, query_req.verified) {
+        let filter = match (&query_req.scoring_result_id, query_req.verified) {
             (Some(scoring_result_id), Some(verified)) => {
-                // Both filters
-                let query = r#"
-                    SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-                    FROM zkml_proofs
-                    WHERE scoring_result_id = $1 AND verified = $2
-                    ORDER BY timestamp DESC
-                    LIMIT $3 OFFSET $4
-                "#;
-                let rows = sqlx::query(query)
-                    .bind(scoring_result_id.value())
-                    .bind(verified)
-                    .bind(limit as i64)
-                    .bind(offset as i64)
-                    .fetch_all(self.app_state.mm.dbx().db())
-                    .await?;
-
-                let count_row = sqlx::query(
-                    "SELECT COUNT(*) as count FROM zkml_proofs WHERE scoring_result_id = $1 AND verified = $2"
-                )
-                .bind(scoring_result_id.value())
-                .bind(verified)
-                .fetch_one(self.app_state.mm.dbx().db())
-                .await?;
-                let total: i64 = count_row.get("count");
-                (rows, total)
+                let scoring_result_uuid = scoring_result_id.to_uuid();
+                Some(ZkProofFilter {
+                    scoring_result_id: Some(vec![modql::filter::OpValValue::Eq(serde_json::Value::String(scoring_result_uuid.to_string()))].into()),
+                    verified: Some(vec![modql::filter::OpValValue::Eq(serde_json::Value::Bool(verified))].into()),
+                })
             },
             (Some(scoring_result_id), None) => {
-                // Only scoring_result_id filter
-                let query = r#"
-                    SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-                    FROM zkml_proofs
-                    WHERE scoring_result_id = $1
-                    ORDER BY timestamp DESC
-                    LIMIT $2 OFFSET $3
-                "#;
-                let rows = sqlx::query(query)
-                    .bind(scoring_result_id.value())
-                    .bind(limit as i64)
-                    .bind(offset as i64)
-                    .fetch_all(self.app_state.mm.dbx().db())
-                    .await?;
-
-                let count_row = sqlx::query("SELECT COUNT(*) as count FROM zkml_proofs WHERE scoring_result_id = $1")
-                    .bind(scoring_result_id.value())
-                    .fetch_one(self.app_state.mm.dbx().db())
-                    .await?;
-                let total: i64 = count_row.get("count");
-                (rows, total)
+                let scoring_result_uuid = scoring_result_id.to_uuid();
+                Some(ZkProofFilter {
+                    scoring_result_id: Some(vec![modql::filter::OpValValue::Eq(serde_json::Value::String(scoring_result_uuid.to_string()))].into()),
+                    verified: None,
+                })
             },
             (None, Some(verified)) => {
-                // Only verified filter
-                let query = r#"
-                    SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-                    FROM zkml_proofs
-                    WHERE verified = $1
-                    ORDER BY timestamp DESC
-                    LIMIT $2 OFFSET $3
-                "#;
-                let rows = sqlx::query(query)
-                    .bind(verified)
-                    .bind(limit as i64)
-                    .bind(offset as i64)
-                    .fetch_all(self.app_state.mm.dbx().db())
-                    .await?;
-
-                let count_row = sqlx::query("SELECT COUNT(*) as count FROM zkml_proofs WHERE verified = $1")
-                    .bind(verified)
-                    .fetch_one(self.app_state.mm.dbx().db())
-                    .await?;
-                let total: i64 = count_row.get("count");
-                (rows, total)
+                Some(ZkProofFilter {
+                    scoring_result_id: None,
+                    verified: Some(vec![modql::filter::OpValValue::Eq(serde_json::Value::Bool(verified))].into()),
+                })
             },
-            (None, None) => {
-                // No filters
-                let query = r#"
-                    SELECT id, scoring_result_id, proof_data, verification_key, verified, blockchain_tx_hash, timestamp
-                    FROM zkml_proofs
-                    ORDER BY timestamp DESC
-                    LIMIT $1 OFFSET $2
-                "#;
-                let rows = sqlx::query(query)
-                    .bind(limit as i64)
-                    .bind(offset as i64)
-                    .fetch_all(self.app_state.mm.dbx().db())
-                    .await?;
-
-                let count_row = sqlx::query("SELECT COUNT(*) as count FROM zkml_proofs")
-                    .fetch_one(self.app_state.mm.dbx().db())
-                    .await?;
-                let total: i64 = count_row.get("count");
-                (rows, total)
-            }
+            (None, None) => None,
         };
         
-        let items: Vec<ZkProofResponse> = rows
+        let list_options = modql::filter::ListOptions {
+            limit: Some(limit as i64),
+            offset: Some(offset as i64),
+            order_bys: Some("!timestamp".into()), // ! prefix for descending
+        };
+        
+        let (records, meta) = base::rest::list::<ZkProofDmc, _, ZkProofRecord>(
+            &self.app_state.mm, 
+            filter, 
+            Some(list_options)
+        ).await?;
+        
+        let items: Vec<ZkProofResponse> = records
             .into_iter()
-            .map(|r| ZkProofResponse {
-                id: Id::new(r.get::<uuid::Uuid, _>("id").to_string()),
-                scoring_result_id: Id::new(r.get::<uuid::Uuid, _>("scoring_result_id").to_string()),
-                proof_data: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("proof_data")).to_string(),
-                verification_key: String::from_utf8_lossy(&r.get::<Vec<u8>, _>("verification_key")).to_string(),
-                verified: r.get("verified"),
-                blockchain_tx_hash: r.get("blockchain_tx_hash"),
-                timestamp: r.get("timestamp"),
-            })
+            .map(ZkProofResponse::from)
             .collect();
         
         Ok(ZkProofListResponse {
             items,
-            total: total as u64,
+            total: meta.total_items(),
             limit,
             offset,
         })
     }
 
     async fn mark_as_verified(&self, id: Id) -> Result<()> {
-        let query = r#"
-            UPDATE zkml_proofs
-            SET verified = true
-            WHERE id = $1
-        "#;
+        let id_uuid = id.to_uuid();
+            
+        let update_req = ZkProofForUpdate {
+            verified: Some(true),
+            blockchain_tx_hash: None,
+        };
         
-        sqlx::query(query)
-            .bind(id.value())
-            .execute(self.app_state.mm.dbx().db())
+        base::rest::update::<ZkProofDmc, _>(&self.app_state.mm, id_uuid, update_req)
             .await?;
             
         Ok(())
     }
 
     async fn update_blockchain_tx(&self, id: Id, tx_hash: String) -> Result<()> {
-        let query = r#"
-            UPDATE zkml_proofs
-            SET blockchain_tx_hash = $1
-            WHERE id = $2
-        "#;
+        let id_uuid = id.to_uuid();
+            
+        let update_req = ZkProofForUpdate {
+            verified: None,
+            blockchain_tx_hash: Some(tx_hash),
+        };
         
-        sqlx::query(query)
-            .bind(&tx_hash)
-            .bind(id.value())
-            .execute(self.app_state.mm.dbx().db())
+        base::rest::update::<ZkProofDmc, _>(&self.app_state.mm, id_uuid, update_req)
             .await?;
             
         Ok(())

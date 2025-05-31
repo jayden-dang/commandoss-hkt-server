@@ -187,3 +187,67 @@ impl AuthUser {
         }
     }
 }
+
+// ZkPersona User structures for public.users table
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow, Fields)]
+pub struct ZkPersonaUser {
+    pub id: Uuid,
+    pub wallet_address: Option<String>,
+    pub public_key: Option<String>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub last_login: Option<OffsetDateTime>,
+    pub login_count: i32,
+    pub status: String,
+    #[serde(with = "time::serde::rfc3339")]
+    pub ctime: OffsetDateTime,
+    #[serde(with = "time::serde::rfc3339")]
+    pub mtime: OffsetDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Fields)]
+pub struct ZkPersonaUserForCreate {
+    pub wallet_address: Option<String>,
+    pub public_key: Option<String>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub last_login: Option<OffsetDateTime>,
+    pub login_count: i32,
+    pub status: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Fields)]
+pub struct ZkPersonaUserForUpdate {
+    pub public_key: Option<String>,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub last_login: Option<OffsetDateTime>,
+    pub login_count: Option<i32>,
+}
+
+#[derive(Debug, Clone, Deserialize, FilterNodes)]
+pub struct ZkPersonaUserFilter {
+    pub wallet_address: Option<OpValsString>,
+    pub id: Option<OpValsValue>,
+}
+
+impl From<&AuthUser> for ZkPersonaUserForCreate {
+    fn from(auth_user: &AuthUser) -> Self {
+        Self {
+            wallet_address: Some(auth_user.address.clone()),
+            public_key: Some(auth_user.public_key.clone()),
+            last_login: Some(auth_user.last_login),
+            login_count: auth_user.login_count,
+            status: "active".to_string(),
+        }
+    }
+}
+
+impl From<ZkPersonaUser> for AuthUser {
+    fn from(zk_user: ZkPersonaUser) -> Self {
+        Self {
+            address: zk_user.wallet_address.unwrap_or_default(),
+            public_key: zk_user.public_key.unwrap_or_default(),
+            created_at: zk_user.ctime,
+            last_login: zk_user.last_login.unwrap_or(zk_user.ctime),
+            login_count: zk_user.login_count,
+        }
+    }
+}

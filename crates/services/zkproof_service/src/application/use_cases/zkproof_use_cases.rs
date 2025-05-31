@@ -7,7 +7,7 @@ use crate::models::{
     requests::{GenerateProofRequest, VerifyProofRequest, ProofQueryRequest},
     responses::{GenerateProofResponse, VerifyProofResponse, ZkProofResponse, ZkProofListResponse},
 };
-use crate::{Error, Result};
+use crate::Result;
 
 pub struct ZkProofUseCases<R: ZkProofRepository> {
     repository: R,

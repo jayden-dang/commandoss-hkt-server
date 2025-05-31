@@ -17,6 +17,9 @@ pub enum Error {
     
     #[error("Internal error: {0}")]
     Internal(String),
+    
+    #[error("Core error: {0}")]
+    Core(#[from] jd_core::Error),
 }
 
 impl IntoResponse for Error {
@@ -27,6 +30,7 @@ impl IntoResponse for Error {
             Error::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string()),
             Error::Serialization(_) => (StatusCode::BAD_REQUEST, "Invalid data format".to_string()),
             Error::Internal(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error".to_string()),
+            Error::Core(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Core service error".to_string()),
         };
 
         let body = Json(json!({

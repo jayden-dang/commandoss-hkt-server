@@ -1,6 +1,6 @@
 use rand::Rng;
 use serde_json::Value;
-use crate::{Error, Result};
+use crate::Result;
 
 pub struct HardcodedScoringModel {
     version: String,

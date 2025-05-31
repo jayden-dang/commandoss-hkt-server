@@ -13,6 +13,7 @@ use jd_core::base::DMC;
 
 pub struct AuthNonceDmc;
 pub struct AuthUserDmc;
+pub struct ZkPersonaUserDmc;
 
 impl DMC for AuthNonceDmc {
   const SCHEMA: &'static str = "auth";
@@ -26,4 +27,11 @@ impl DMC for AuthUserDmc {
   const TABLE: &'static str = "users";
   const ID: &'static str = "address";
   const ENUM_COLUMNS: &'static [&'static str] = &[];
+}
+
+impl DMC for ZkPersonaUserDmc {
+  const SCHEMA: &'static str = "public";
+  const TABLE: &'static str = "users";
+  const ID: &'static str = "id";
+  const ENUM_COLUMNS: &'static [&'static str] = &["status"];
 }

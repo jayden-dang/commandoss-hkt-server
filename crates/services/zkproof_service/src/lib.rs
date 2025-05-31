@@ -8,6 +8,7 @@ mod error;
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, Error>;
 
+use jd_core::base::DMC;
 use application::handlers::zkproof_handler::ZkProofHandler;
 use infrastructure::zkproof_repository_impl::ZkProofRepositoryImpl;
 use jd_core::AppState;
@@ -27,4 +28,13 @@ impl ZkProofService {
     pub fn handler(&self) -> &ZkProofHandler<ZkProofRepositoryImpl> {
         &self.handler
     }
+}
+
+pub struct ZkProofDmc;
+
+impl DMC for ZkProofDmc {
+    const SCHEMA: &'static str = "public";
+    const TABLE: &'static str = "zkml_proofs";
+    const ID: &'static str = "id";
+    const ENUM_COLUMNS: &'static [&'static str] = &[];
 }

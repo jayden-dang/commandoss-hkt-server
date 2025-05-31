@@ -7,7 +7,7 @@ use crate::models::{
     requests::{ScoringRequest, ScoringQueryRequest},
     responses::{ScoringResponse, ScoringListResponse},
 };
-use crate::{Error, Result};
+use crate::Result;
 
 pub struct ScoringUseCases<R: ScoringRepository> {
     repository: R,

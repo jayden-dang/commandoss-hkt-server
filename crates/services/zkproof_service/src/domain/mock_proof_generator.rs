@@ -1,7 +1,7 @@
 use base64::{Engine as _, engine::general_purpose};
 use rand::Rng;
 use serde_json::{json, Value};
-use crate::{Error, Result};
+use crate::Result;
 
 pub struct MockProofGenerator {
     version: String,

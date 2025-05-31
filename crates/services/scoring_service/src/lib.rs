@@ -8,6 +8,7 @@ mod error;
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, Error>;
 
+use jd_core::base::DMC;
 use application::handlers::scoring_handler::ScoringHandler;
 use infrastructure::scoring_repository_impl::ScoringRepositoryImpl;
 use jd_core::AppState;
@@ -27,4 +28,13 @@ impl ScoringService {
     pub fn handler(&self) -> &ScoringHandler<ScoringRepositoryImpl> {
         &self.handler
     }
+}
+
+pub struct ScoringResultDmc;
+
+impl DMC for ScoringResultDmc {
+    const SCHEMA: &'static str = "public";
+    const TABLE: &'static str = "scoring_results";
+    const ID: &'static str = "id";
+    const ENUM_COLUMNS: &'static [&'static str] = &[];
 }

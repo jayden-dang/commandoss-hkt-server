@@ -35,6 +35,24 @@ pub struct PaginationMetadata {
   total_pages: u64,
 }
 
+impl PaginationMetadata {
+  pub fn current_page(&self) -> u64 {
+    self.current_page
+  }
+  
+  pub fn per_page(&self) -> u64 {
+    self.per_page
+  }
+  
+  pub fn total_items(&self) -> u64 {
+    self.total_items
+  }
+  
+  pub fn total_pages(&self) -> u64 {
+    self.total_pages
+  }
+}
+
 pub trait DMC {
   const SCHEMA: &'static str;
   const TABLE: &'static str;
