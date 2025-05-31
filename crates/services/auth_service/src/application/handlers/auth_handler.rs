@@ -10,7 +10,7 @@ use crate::application::use_cases::{
 };
 use crate::domain::{AuthUser, NonceRepository, SignatureVerifier, UserRepository};
 use crate::error::{Error, Result};
-use crate::infrastructure::{NonceRepositoryImpl, SignatureVerifierImpl, UserRepositoryImpl};
+use crate::infrastructure::{NonceRepositoryImpl, SignatureVerifierImpl, ZkPersonaUserRepositoryImpl};
 use crate::models::{
   NonceRequest, NonceResponse, RefreshRequest, RefreshResponse, UserInfo, VerifyRequest,
   VerifyResponse,
@@ -61,7 +61,7 @@ impl<N: NonceRepository, U: UserRepository, S: SignatureVerifier> AuthHandler<N,
       .map_err(|e| Error::invalid_request_data(&format!("Validation failed: {}", e)))?;
 
     let nonce_repo = NonceRepositoryImpl::new(state.clone());
-    let user_repo = UserRepositoryImpl::new(state.clone());
+    let user_repo = ZkPersonaUserRepositoryImpl::new(state.clone());
     let signature_verifier = SignatureVerifierImpl::new();
     let jwt_secret = state.config.auth_jwt_secret.clone();
 
@@ -104,11 +104,11 @@ impl<N: NonceRepository, U: UserRepository, S: SignatureVerifier> AuthHandler<N,
       .and_then(|h| h.to_str().ok())
       .ok_or_else(Error::missing_auth_header)?;
 
-    let user_repo = UserRepositoryImpl::new(state.clone());
+    let user_repo = ZkPersonaUserRepositoryImpl::new(state.clone());
     let jwt_secret = state.config.auth_jwt_secret.clone();
     let use_case = ValidateTokenUseCase::new(user_repo, jwt_secret);
 
-    let token = ValidateTokenUseCase::<UserRepositoryImpl>::extract_token_from_header(auth_header)?;
+    let token = ValidateTokenUseCase::<ZkPersonaUserRepositoryImpl>::extract_token_from_header(auth_header)?;
     let user = use_case.execute(token).await?;
 
     request.extensions_mut().insert(user);

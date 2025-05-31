@@ -4,9 +4,9 @@ use time::OffsetDateTime;
 use crate::domain::{
     UnifiedAuthUser, UnifiedAuthUserForCreate, UnifiedAuthUserForUpdate,
     UserAuthProvider, UserAuthProviderForCreate,
-    AuthProviderType, ProviderStatus, UserRole
+    UserRole
 };
-use crate::error::{Result, Error};
+use crate::error::Result;
 
 #[derive(Debug, Clone)]
 pub struct LoginResult {

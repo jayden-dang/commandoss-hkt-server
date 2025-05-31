@@ -10,9 +10,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Note: Uses different emails than profile.users to avoid conflicts
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_address VARCHAR(100) UNIQUE,
+    wallet_address VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE,
     username VARCHAR(100) UNIQUE,
+    
+    -- Auth fields
+    public_key TEXT NOT NULL,
+    last_login TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    login_count INTEGER NOT NULL DEFAULT 0,
+    
+    -- Profile fields
     status VARCHAR(20) NOT NULL DEFAULT 'active',
     privacy_settings JSONB NOT NULL DEFAULT '{"data_sharing": false, "public_profile": false}',
     
@@ -23,7 +30,9 @@ CREATE TABLE IF NOT EXISTS users (
     mtime TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     
     -- Constraints
-    CONSTRAINT users_wallet_address_check CHECK (wallet_address IS NULL OR LENGTH(wallet_address) >= 10),
+    CONSTRAINT users_wallet_address_check CHECK (LENGTH(wallet_address) = 66),
+    CONSTRAINT users_public_key_check CHECK (LENGTH(public_key) >= 10),
+    CONSTRAINT users_login_count_check CHECK (login_count >= 0),
     CONSTRAINT users_email_check CHECK (email IS NULL OR email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     CONSTRAINT users_username_check CHECK (username IS NULL OR (LENGTH(username) >= 3 AND LENGTH(username) <= 100)),
     CONSTRAINT users_status_check CHECK (status IN ('active', 'inactive', 'suspended', 'deleted'))
@@ -33,6 +42,8 @@ CREATE INDEX IF NOT EXISTS idx_users_wallet_address ON users(wallet_address);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
+CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login);
+CREATE INDEX IF NOT EXISTS idx_users_login_count ON users(login_count);
 CREATE INDEX IF NOT EXISTS idx_users_ctime ON users(ctime);
 
 -- Table: behavior_sessions
@@ -282,7 +293,10 @@ COMMENT ON TABLE zk_proofs IS 'Enhanced ZK proof management with comprehensive m
 COMMENT ON TABLE reputation_records IS 'Time-series reputation tracking with detailed scoring context and verification';
 
 -- Column comments
-COMMENT ON COLUMN users.wallet_address IS 'Blockchain wallet address for decentralized identity';
+COMMENT ON COLUMN users.wallet_address IS 'Sui wallet address (66 characters: 0x + 64 hex)';
+COMMENT ON COLUMN users.public_key IS 'Base64-encoded public key for signature verification';
+COMMENT ON COLUMN users.last_login IS 'Timestamp of the user''s last successful login';
+COMMENT ON COLUMN users.login_count IS 'Total number of successful logins';
 COMMENT ON COLUMN users.privacy_settings IS 'User privacy preferences for data sharing and profile visibility';
 COMMENT ON COLUMN behavior_sessions.session_token IS 'Unique session identifier for tracking user behavior';
 COMMENT ON COLUMN behavior_sessions.duration_seconds IS 'Session duration calculated from start_time to end_time';
@@ -293,8 +307,9 @@ COMMENT ON COLUMN reputation_records.reputation_badges IS 'Earned badges and ach
 COMMENT ON COLUMN reputation_records.peer_validations IS 'Number of peer validations received for this reputation record';
 
 -- Insert sample users for ZK-Persona (using unique emails to avoid conflicts)
-INSERT INTO users (wallet_address, email, username, status, privacy_settings) VALUES
-('0x1234567890abcdef1234567890abcdef12345678', 'zkuser1@zkpersona.dev', 'zkuser1', 'active', '{"data_sharing": true, "public_profile": true}'),
-('0x2345678901bcdef12345678901bcdef123456789', 'zkuser2@zkpersona.dev', 'zkuser2', 'active', '{"data_sharing": false, "public_profile": true}'),
-('0x3456789012cdef123456789012cdef12345678a', 'zkuser3@zkpersona.dev', 'zkuser3', 'active', '{"data_sharing": true, "public_profile": false}')
-ON CONFLICT (email) DO NOTHING;
+-- Note: Sui addresses are 66 characters long (0x + 64 hex characters)
+INSERT INTO users (wallet_address, public_key, email, username, status, privacy_settings) VALUES
+('0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef', 'placeholder_public_key_1', 'zkuser1@zkpersona.dev', 'zkuser1', 'active', '{"data_sharing": true, "public_profile": true}'),
+('0x2345678901bcdef2345678901bcdef2345678901bcdef2345678901bcdef2345', 'placeholder_public_key_2', 'zkuser2@zkpersona.dev', 'zkuser2', 'active', '{"data_sharing": false, "public_profile": true}'),
+('0x3456789012cdef3456789012cdef3456789012cdef3456789012cdef3456789a', 'placeholder_public_key_3', 'zkuser3@zkpersona.dev', 'zkuser3', 'active', '{"data_sharing": true, "public_profile": false}')
+ON CONFLICT (wallet_address) DO NOTHING;
