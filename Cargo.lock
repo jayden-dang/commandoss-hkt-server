@@ -330,6 +330,7 @@ dependencies = [
  "reqwest",
  "rpc-router",
  "rpc-router-macros",
+ "rust_decimal",
  "scoring_service",
  "sea-query",
  "serde",

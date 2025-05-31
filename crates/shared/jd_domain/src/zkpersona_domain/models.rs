@@ -647,6 +647,51 @@ pub struct BehaviorAnalyticsSummary {
 // Error Types
 // ================================================================================================
 
+// ================================================================================================
+// Data Transfer Objects (DTOs) for REST API
+// ================================================================================================
+
+/// DTO for creating a new behavior input
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateBehaviorInputForRest {
+    pub user_id: Option<Id>,
+    pub behavior_session_id: Option<Id>,
+    pub session_id: Option<String>,
+    pub input_data: JsonValue,
+    pub input_type: InputType,
+    pub source: InputSource,
+    pub processed: Option<bool>,
+}
+
+/// DTO for creating a new scoring result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateScoringResultForRest {
+    pub behavior_input_id: Id,
+    pub score: rust_decimal::Decimal,
+    pub model_version: String,
+    pub confidence_level: Option<rust_decimal::Decimal>,
+    pub metadata: Option<JsonValue>,
+}
+
+/// DTO for creating a new ZK proof
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateZkProofForRest {
+    pub user_id: Option<Id>,
+    pub behavior_input_id: Option<Id>,
+    pub scoring_result_id: Option<Id>,
+    pub proof_data: JsonValue,
+    pub verification_key: JsonValue,
+    pub public_signals: Option<JsonValue>,
+    pub proof_type: ProofType,
+    pub protocol: ProofProtocol,
+    pub circuit_version: String,
+    pub verification_status: Option<VerificationStatus>,
+}
+
+// ================================================================================================
+// Error Types
+// ================================================================================================
+
 #[derive(Debug, thiserror::Error)]
 pub enum ZkPersonaError {
     #[error("User not found: {user_id}")]
