@@ -25,6 +25,16 @@ impl Id {
   pub fn value(&self) -> &Uuid {
     &self.0
   }
+
+  pub fn from_str(s: &str) -> Result<Self> {
+    Uuid::parse_str(s)
+      .map(Self)
+      .map_err(|e| error::Error::Generic(format!("Invalid UUID: {}", e)))
+  }
+
+  pub fn to_uuid(&self) -> Uuid {
+    self.0
+  }
 }
 
 impl Display for Id {
@@ -37,6 +47,12 @@ impl Display for Id {
 impl From<Id> for Value {
   fn from(id: Id) -> Self {
     Value::Uuid(Some(Box::new(id.0)))
+  }
+}
+
+impl From<Uuid> for Id {
+  fn from(uuid: Uuid) -> Self {
+    Self(uuid)
   }
 }
 

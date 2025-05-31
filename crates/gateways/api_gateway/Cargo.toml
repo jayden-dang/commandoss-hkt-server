@@ -67,3 +67,4 @@ behavior_service = { path = "../../services/behavior_service" }
 scoring_service = { path = "../../services/scoring_service" }
 zkproof_service = { path = "../../services/zkproof_service" }
 sui_service = { path = "../../services/sui_service" }
+auth_service = { path = "../../services/auth_service" }

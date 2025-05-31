@@ -10,6 +10,8 @@ use validator::ValidationErrors;
 pub enum Error {
   #[from]
   ValidationErrors(#[serde_as(as = "DisplayFromStr")] ValidationErrors),
+  
+  Generic(String),
 }
 
 impl Display for Error {

@@ -1,6 +1,10 @@
-use axum::{extract::State, http::StatusCode, response::Json};
+use axum::{
+  extract::{Extension, State},
+  http::StatusCode,
+  response::Json,
+};
 use chrono::Utc;
-use jd_core::AppState;
+use jd_core::{ctx::Ctx, AppState};
 use jd_domain::{zkpersona_domain::models::*, Id};
 use jd_storage::{
   config::{DatabaseConfig, DatabaseManager},
@@ -53,9 +57,11 @@ pub struct VerifyProofResponse {
 /// 4. Returns proof + public signals
 pub async fn generate_proof(
   State(app_state): State<AppState>,
+  Extension(ctx): Extension<Ctx>,
   Json(request): Json<GenerateProofRequest>,
 ) -> Result<Json<GenerateProofResponse>, StatusCode> {
   info!("Generate proof request received for session: {:?}", request.session_id);
+  info!("User ID from context: {}", ctx.user_id());
 
   // Step 1: Store behavior input in database
   let behavior_input_id = Id::generate();
@@ -84,8 +90,10 @@ pub async fn generate_proof(
   let behavior_repo = BehaviorInputRepository::new(dbx);
 
   // Create behavior input request
+  // Note: We would need to map the i64 user_id back to UUID
+  // For now, we'll skip the user_id association
   let create_request = CreateBehaviorInputRequest {
-    user_id: None, // TODO: Get from authenticated user context
+    user_id: None, // TODO: Implement proper UUID to i64 mapping
     behavior_session_id: None,
     session_id: request.session_id.clone(),
     input_data: request.behavior_input.clone(),

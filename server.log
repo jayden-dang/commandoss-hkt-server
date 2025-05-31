@@ -1,0 +1,575 @@
+warning: enum `BehaviorInputTable` is never used
+  --> crates/infrastructure/jd_storage/src/repository/behavior_input_repository.rs:28:6
+   |
+28 | enum BehaviorInputTable {
+   |      ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `jd_storage` (lib) generated 1 warning
+warning: unused import: `Error`
+  --> crates/services/zkproof_service/src/application/use_cases/zkproof_use_cases.rs:10:13
+   |
+10 | use crate::{Error, Result};
+   |             ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Error`
+ --> crates/services/zkproof_service/src/domain/mock_proof_generator.rs:4:13
+  |
+4 | use crate::{Error, Result};
+  |             ^^^^^
+
+warning: unused variable: `request`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:25:15
+   |
+25 |         Json((request, scoring_result_id, score)): Json<(GenerateProofRe...
+   |               ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_request`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `scoring_result_id`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:25:24
+   |
+25 |         Json((request, scoring_result_id, score)): Json<(GenerateProofRe...
+   |                        ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_scoring_result_id`
+
+warning: unused variable: `score`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:25:43
+   |
+25 | ...uest, scoring_result_id, score)): Json<(GenerateProofRequest, Id, f64)>,
+   |                             ^^^^^ help: if this is intentional, prefix it with an underscore: `_score`
+
+warning: unused variable: `request`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:34:14
+   |
+34 |         Json(request): Json<VerifyProofRequest>,
+   |              ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_request`
+
+warning: unused variable: `id`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:44:13
+   |
+44 |         let id = Id::new(id);
+   |             ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `scoring_id`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:53:13
+   |
+53 |         let scoring_id = Id::new(scoring_id);
+   |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_scoring_id`
+
+warning: unused variable: `query`
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:60:15
+   |
+60 |         Query(query): Query<ProofQueryRequest>,
+   |               ^^^^^ help: if this is intentional, prefix it with an underscore: `_query`
+
+warning: field `use_cases` is never read
+  --> crates/services/zkproof_service/src/application/handlers/zkproof_handler.rs:14:5
+   |
+13 | pub struct ZkProofHandler<R: ZkProofRepository> {
+   |            -------------- field in this struct
+14 |     use_cases: ZkProofUseCases<R>,
+   |     ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused variable: `request`
+  --> crates/services/behavior_service/src/application/handlers/behavior_handler.rs:25:14
+   |
+25 |         Json(request): Json<BehaviorInputRequest>,
+   |              ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_request`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `id`
+  --> crates/services/behavior_service/src/application/handlers/behavior_handler.rs:36:13
+   |
+36 |         let id = Id::new(id);
+   |             ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `query`
+  --> crates/services/behavior_service/src/application/handlers/behavior_handler.rs:43:15
+   |
+43 |         Query(query): Query<BehaviorQueryRequest>,
+   |               ^^^^^ help: if this is intentional, prefix it with an underscore: `_query`
+
+warning: unused variable: `id`
+  --> crates/services/behavior_service/src/application/handlers/behavior_handler.rs:53:13
+   |
+53 |         let id = Id::new(id);
+   |             ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: field `use_cases` is never read
+  --> crates/services/behavior_service/src/application/handlers/behavior_handler.rs:14:5
+   |
+13 | pub struct BehaviorHandler<R: BehaviorRepository> {
+   |            --------------- field in this struct
+14 |     use_cases: BehaviorUseCases<R>,
+   |     ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: unused import: `Error`
+  --> crates/services/scoring_service/src/application/use_cases/scoring_use_cases.rs:10:13
+   |
+10 | use crate::{Error, Result};
+   |             ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Error`
+ --> crates/services/scoring_service/src/domain/scoring_model.rs:3:13
+  |
+3 | use crate::{Error, Result};
+  |             ^^^^^
+
+warning: unused variable: `request`
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:25:15
+   |
+25 |         Json((request, behavior_data)): Json<(ScoringRequest, serde_json...
+   |               ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_request`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `behavior_data`
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:25:24
+   |
+25 |         Json((request, behavior_data)): Json<(ScoringRequest, serde_json...
+   |                        ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_behavior_data`
+
+warning: unused variable: `id`
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:36:13
+   |
+36 |         let id = Id::new(id);
+   |             ^^ help: if this is intentional, prefix it with an underscore: `_id`
+
+warning: unused variable: `behavior_id`
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:45:13
+   |
+45 |         let behavior_id = Id::new(behavior_id);
+   |             ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_behavior_id`
+
+warning: unused variable: `query`
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:52:15
+   |
+52 |         Query(query): Query<ScoringQueryRequest>,
+   |               ^^^^^ help: if this is intentional, prefix it with an underscore: `_query`
+
+warning: field `use_cases` is never read
+  --> crates/services/scoring_service/src/application/handlers/scoring_handler.rs:14:5
+   |
+13 | pub struct ScoringHandler<R: ScoringRepository> {
+   |            -------------- field in this struct
+14 |     use_cases: ScoringUseCases<R>,
+   |     ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `zkproof_service` (lib) generated 10 warnings (run `cargo fix --lib -p zkproof_service` to apply 2 suggestions)
+warning: `behavior_service` (lib) generated 5 warnings
+warning: `scoring_service` (lib) generated 8 warnings (run `cargo fix --lib -p scoring_service` to apply 2 suggestions)
+warning: unused import: `State`
+ --> crates/services/user_service/src/application/handlers/user_handler.rs:1:28
+  |
+1 | use axum::{extract::{Path, State}, http::StatusCode, response::Json};
+  |                            ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `jd_core::AppState`
+ --> crates/services/user_service/src/application/handlers/user_handler.rs:2:5
+  |
+2 | use jd_core::AppState;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: `user_service` (lib) generated 2 warnings (run `cargo fix --lib -p user_service` to apply 2 suggestions)
+warning: unused import: `HeaderMap`
+ --> crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:4:10
+  |
+4 |   http::{HeaderMap, StatusCode},
+  |          ^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `serde_json::json`
+  --> crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:11:5
+   |
+11 | use serde_json::json;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::Arc`
+  --> crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:12:5
+   |
+12 | use std::sync::Arc;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `routing::post`
+ --> crates/gateways/api_gateway/src/sui/mod.rs:1:20
+  |
+1 | use axum::{Router, routing::post};
+  |                    ^^^^^^^^^^^^^
+
+warning: unused import: `middleware`
+ --> crates/gateways/api_gateway/src/zkpersona/mod.rs:1:12
+  |
+1 | use axum::{middleware, routing::post, Router};
+  |            ^^^^^^^^^^
+
+warning: unused imports: `AuthenticateWalletRequest`, `GenerateNonceRequest`, `NonceRepository`, `SignatureVerifier`, and `UserRepository`
+ --> crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:8:3
+  |
+8 |   GenerateNonceRequest, AuthenticateWalletRequest, NonceResponse, UserRes...
+  |   ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+9 |   UserUseCases, UserRepository, NonceRepository, SignatureVerifier,
+  |                 ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `dbx::Dbx`
+  --> crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:12:61
+   |
+12 | use jd_storage::{config::{DatabaseConfig, DatabaseManager}, dbx::Dbx};
+   |                                                             ^^^^^^^^
+
+warning: unused import: `crate::middleware::mw_user_auth::mw_ctx_require_user_auth`
+ --> crates/gateways/api_gateway/src/zkpersona/mod.rs:7:9
+  |
+7 | pub use crate::middleware::mw_user_auth::mw_ctx_require_user_auth;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `app_state`
+  --> crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:79:3
+   |
+79 |   app_state: &AppState,
+   |   ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `app_state`
+  --> crates/gateways/api_gateway/src/routes_rpc.rs:10:9
+   |
+10 |   State(app_state): State<AppState>,
+   |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+
+warning: unused variable: `ctx`
+  --> crates/gateways/api_gateway/src/routes_rpc.rs:14:7
+   |
+14 |   let ctx = Ctx::new(0).unwrap_or_else(|_| Ctx::root_ctx());
+   |       ^^^ help: if this is intentional, prefix it with an underscore: `_ctx`
+
+warning: unused variable: `params`
+  --> crates/gateways/api_gateway/src/routes_rpc.rs:18:7
+   |
+18 |   let params = rpc_req.get("params").cloned().unwrap_or(json!({}));
+   |       ^^^^^^ help: if this is intentional, prefix it with an underscore: `_params`
+
+warning: unused variable: `app_state`
+  --> crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:39:9
+   |
+39 |   State(app_state): State<AppState>,
+   |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+
+warning: unused variable: `app_state`
+   --> crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:107:9
+    |
+107 |   State(app_state): State<AppState>,
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+
+warning: unused variable: `app_state`
+  --> crates/gateways/api_gateway/src/zkpersona/unified_endpoints.rs:55:9
+   |
+55 |   State(app_state): State<AppState>,
+   |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+
+warning: unused variable: `behavior_input_id`
+  --> crates/gateways/api_gateway/src/zkpersona/unified_endpoints.rs:63:7
+   |
+63 |   let behavior_input_id = Id::generate();
+   |       ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_behavior_input_id`
+
+warning: unused variable: `app_state`
+   --> crates/gateways/api_gateway/src/zkpersona/unified_endpoints.rs:156:9
+    |
+156 |   State(app_state): State<AppState>,
+    |         ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_app_state`
+
+warning: use of deprecated associated function `tower_cookies::Cookie::<'c>::named`: use `Cookie::build(name)` or `Cookie::from(name)`
+   --> crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:158:26
+    |
+158 |   cookies.remove(Cookie::named(AUTH_TOKEN));
+    |                          ^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: function `zkpersona_router` is never used
+ --> crates/gateways/api_gateway/src/zkpersona/mod.rs:9:8
+  |
+9 | pub fn zkpersona_router() -> Router<AppState> {
+  |        ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: `api_gateway` (lib) generated 19 warnings (run `cargo fix --lib -p api_gateway` to apply 8 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.05s
+     Running `target/debug/web_server`
+  [2m2025-05-31T07:04:21.882219Z[0m [32m INFO[0m  [32mTracing initialized, [1;32menvironment[0m[32m: Development, [1;32mlevel[0m[32m: Level(Trace), [1;32mjson_format[0m[32m: false, [1;32mtimestamp[0m[32m: "2025-05-31T07:04:21.880518Z"[0m
+    [2;3mat[0m crates/infrastructure/jd_tracing/src/lib.rs:212
+
+  [2m2025-05-31T07:04:21.885935Z[0m [32m INFO[0m  [32mInitializing database connection pool...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:164
+
+  [2m2025-05-31T07:04:22.128682Z[0m [32m INFO[0m  [32mDatabase connection pool initialized successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:172
+
+  [2m2025-05-31T07:04:22.130782Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT 1", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 1.067125ms, [1;34melapsed_secs[0m[34m: 0.001067125[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.130850Z[0m [32m INFO[0m  [32mDatabase connection test successful[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:231
+
+  [2m2025-05-31T07:04:22.130873Z[0m [32m INFO[0m  [32mRunning database migrations...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:239
+
+  [2m2025-05-31T07:04:22.133522Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 2.051666ms, [1;34melapsed_secs[0m[34m: 0.002051666[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.134357Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_lock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 789.208µs, [1;34melapsed_secs[0m[34m: 0.000789208[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.134704Z[0m [32m INFO[0m  [32mrelation "_sqlx_migrations" already exists, skipping[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-postgres-0.8.6/src/connection/stream.rs:185
+
+  [2m2025-05-31T07:04:22.134725Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "CREATE TABLE IF NOT …", [1;34mdb.statement[0m[34m: "\n\n\nCREATE TABLE IF NOT EXISTS _sqlx_migrations (\n    version BIGINT PRIMARY KEY,\n    description TEXT NOT NULL,\n    installed_on TIMESTAMPTZ NOT NULL DEFAULT now(),\n    success BOOLEAN NOT NULL,\n    checksum BYTEA NOT NULL,\n    execution_time BIGINT NOT NULL\n);\n                \n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 338.584µs, [1;34melapsed_secs[0m[34m: 0.000338584[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.136066Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version FROM _sqlx_migrations …", [1;34mdb.statement[0m[34m: "\n\nSELECT version FROM _sqlx_migrations WHERE success = false ORDER BY version LIMIT 1\n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 1.129625ms, [1;34melapsed_secs[0m[34m: 0.001129625[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.136627Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version, checksum FROM …", [1;34mdb.statement[0m[34m: "\n\nSELECT version, checksum FROM _sqlx_migrations ORDER BY version\n", [1;34mrows_affected[0m[34m: 4, [1;34mrows_returned[0m[34m: 4, [1;34melapsed[0m[34m: 522.333µs, [1;34melapsed_secs[0m[34m: 0.000522333[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.137173Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 227.292µs, [1;34melapsed_secs[0m[34m: 0.000227292[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.137664Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_unlock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 467.208µs, [1;34melapsed_secs[0m[34m: 0.000467208[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:22.137691Z[0m [32m INFO[0m  [32mDatabase migrations completed successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:245
+
+  [2m2025-05-31T07:04:22.139457Z[0m [32m INFO[0m  [32mInitializing Sui client with environment: devnet[0m
+    [2;3mat[0m crates/core/jd_core/src/lib.rs:54
+
+  [2m2025-05-31T07:04:22.960258Z[0m [32m INFO[0m  [32mServer is running on port: 0.0.0.0:8080[0m
+    [2;3mat[0m crates/gateways/web_server/src/main.rs:59
+
+  [2m2025-05-31T07:04:37.462975Z[0m [32m INFO[0m  [32mGenerate nonce request for wallet: 0x1234567890abcdef1234567890abcdef12345678[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:42
+
+  [2m2025-05-31T07:04:37.463801Z[0m [32m INFO[0m  [32mInitializing database connection pool...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:164
+
+  [2m2025-05-31T07:04:37.686206Z[0m [32m INFO[0m  [32mDatabase connection pool initialized successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:172
+
+  [2m2025-05-31T07:04:37.687616Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT 1", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 1.02025ms, [1;34melapsed_secs[0m[34m: 0.00102025[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.687653Z[0m [32m INFO[0m  [32mDatabase connection test successful[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:231
+
+  [2m2025-05-31T07:04:37.687662Z[0m [32m INFO[0m  [32mRunning database migrations...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:239
+
+  [2m2025-05-31T07:04:37.688942Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 814.375µs, [1;34melapsed_secs[0m[34m: 0.000814375[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.689677Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_lock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 698.208µs, [1;34melapsed_secs[0m[34m: 0.000698208[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.690089Z[0m [32m INFO[0m  [32mrelation "_sqlx_migrations" already exists, skipping[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-postgres-0.8.6/src/connection/stream.rs:185
+
+  [2m2025-05-31T07:04:37.690108Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "CREATE TABLE IF NOT …", [1;34mdb.statement[0m[34m: "\n\n\nCREATE TABLE IF NOT EXISTS _sqlx_migrations (\n    version BIGINT PRIMARY KEY,\n    description TEXT NOT NULL,\n    installed_on TIMESTAMPTZ NOT NULL DEFAULT now(),\n    success BOOLEAN NOT NULL,\n    checksum BYTEA NOT NULL,\n    execution_time BIGINT NOT NULL\n);\n                \n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 396.25µs, [1;34melapsed_secs[0m[34m: 0.00039625[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.691408Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version FROM _sqlx_migrations …", [1;34mdb.statement[0m[34m: "\n\nSELECT version FROM _sqlx_migrations WHERE success = false ORDER BY version LIMIT 1\n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 1.275625ms, [1;34melapsed_secs[0m[34m: 0.001275625[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.692084Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version, checksum FROM …", [1;34mdb.statement[0m[34m: "\n\nSELECT version, checksum FROM _sqlx_migrations ORDER BY version\n", [1;34mrows_affected[0m[34m: 4, [1;34mrows_returned[0m[34m: 4, [1;34melapsed[0m[34m: 651.666µs, [1;34melapsed_secs[0m[34m: 0.000651666[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.692399Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 262.417µs, [1;34melapsed_secs[0m[34m: 0.000262417[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.693001Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_unlock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 571.291µs, [1;34melapsed_secs[0m[34m: 0.000571291[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.693025Z[0m [32m INFO[0m  [32mDatabase migrations completed successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:245
+
+  [2m2025-05-31T07:04:37.694363Z[0m [32m INFO[0m  [32mGenerating nonce for wallet: 0x1234567890abcdef1234567890abcdef12345678[0m
+    [2;3mat[0m crates/services/user_service/src/application/use_cases/user_use_cases.rs:41
+
+  [2m2025-05-31T07:04:37.696862Z[0m [32m INFO[0m  [32mRequest completed successfully: POST - /api/v1/zkpersona/auth/nonce[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:175
+
+  [2m2025-05-31T07:04:37.697192Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"fbae7811-a48c-4527-83b5-4fb19cac1b99","timestamp":"2025-05-31T07:04:37.696929Z","duration_ms":234.16,"request":{"method":"POST","path":"/api/v1/zkpersona/auth/nonce"},"response":{"status":"✅ success","body":{"id":"fbae7811-a48c-4527-83b5-4fb19cac1b99","status":0,"type":"success","data":{"message":"Sign this message to authenticate: 11023823419355080009","expires_at":"2025-05-31T07:09:37.694381Z"},"error":null,"meta":{"timestamp":"2025-05-31T07:04:37.696828Z"}},"size":257}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
+  [2m2025-05-31T07:04:37.699501Z[0m [32m INFO[0m  [32mGenerate nonce request for wallet: invalid_address[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:42
+
+  [2m2025-05-31T07:04:37.699543Z[0m [31mERROR[0m  [31mInvalid wallet address format: invalid_address[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:46
+
+  [2m2025-05-31T07:04:37.699595Z[0m [31mERROR[0m  [31mRequest failed: POST /api/v1/zkpersona/auth/nonce - Status: 400 Bad Request[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:172
+
+  [2m2025-05-31T07:04:37.699645Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"2bce0f73-2158-4266-9067-6fdd1c1d414c","timestamp":"2025-05-31T07:04:37.699609Z","duration_ms":0.191,"request":{"method":"POST","path":"/api/v1/zkpersona/auth/nonce"},"response":{"status":"❌ error","body":{"id":"2bce0f73-2158-4266-9067-6fdd1c1d414c","status":1,"type":"error","data":null,"error":{"type":"UNKNOWN_ERROR","code":400,"message":"An unexpected error occurred"},"meta":{"timestamp":"2025-05-31T07:04:37.699572Z"}},"size":219},"error":{}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
+  [2m2025-05-31T07:04:37.701075Z[0m [32m INFO[0m  [32mWallet login request for: 0x1234567890abcdef1234567890abcdef12345678[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:111
+
+  [2m2025-05-31T07:04:37.701891Z[0m [32m INFO[0m  [32mInitializing database connection pool...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:164
+
+  [2m2025-05-31T07:04:37.921623Z[0m [32m INFO[0m  [32mDatabase connection pool initialized successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:172
+
+  [2m2025-05-31T07:04:37.923056Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT 1", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 968.417µs, [1;34melapsed_secs[0m[34m: 0.000968417[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.923114Z[0m [32m INFO[0m  [32mDatabase connection test successful[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:231
+
+  [2m2025-05-31T07:04:37.923123Z[0m [32m INFO[0m  [32mRunning database migrations...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:239
+
+  [2m2025-05-31T07:04:37.924190Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 731.583µs, [1;34melapsed_secs[0m[34m: 0.000731583[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.924892Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_lock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 650.417µs, [1;34melapsed_secs[0m[34m: 0.000650417[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.925264Z[0m [32m INFO[0m  [32mrelation "_sqlx_migrations" already exists, skipping[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-postgres-0.8.6/src/connection/stream.rs:185
+
+  [2m2025-05-31T07:04:37.925284Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "CREATE TABLE IF NOT …", [1;34mdb.statement[0m[34m: "\n\n\nCREATE TABLE IF NOT EXISTS _sqlx_migrations (\n    version BIGINT PRIMARY KEY,\n    description TEXT NOT NULL,\n    installed_on TIMESTAMPTZ NOT NULL DEFAULT now(),\n    success BOOLEAN NOT NULL,\n    checksum BYTEA NOT NULL,\n    execution_time BIGINT NOT NULL\n);\n                \n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 362.834µs, [1;34melapsed_secs[0m[34m: 0.000362834[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.926802Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version FROM _sqlx_migrations …", [1;34mdb.statement[0m[34m: "\n\nSELECT version FROM _sqlx_migrations WHERE success = false ORDER BY version LIMIT 1\n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 1.462291ms, [1;34melapsed_secs[0m[34m: 0.001462291[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.927547Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version, checksum FROM …", [1;34mdb.statement[0m[34m: "\n\nSELECT version, checksum FROM _sqlx_migrations ORDER BY version\n", [1;34mrows_affected[0m[34m: 4, [1;34mrows_returned[0m[34m: 4, [1;34melapsed[0m[34m: 699.584µs, [1;34melapsed_secs[0m[34m: 0.000699584[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.927947Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 316.375µs, [1;34melapsed_secs[0m[34m: 0.000316375[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.928726Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_unlock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 750.291µs, [1;34melapsed_secs[0m[34m: 0.000750291[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:37.928753Z[0m [32m INFO[0m  [32mDatabase migrations completed successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:245
+
+  [2m2025-05-31T07:04:37.928795Z[0m [32m INFO[0m  [32mAuthenticating wallet: 0x1234567890abcdef1234567890abcdef12345678[0m
+    [2;3mat[0m crates/services/user_service/src/application/use_cases/user_use_cases.rs:60
+
+  [2m2025-05-31T07:04:37.930554Z[0m [31mERROR[0m  [31mFailed to authenticate wallet: Invalid signature[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:161
+
+  [2m2025-05-31T07:04:37.930735Z[0m [31mERROR[0m  [31mRequest failed: POST /api/v1/zkpersona/auth/login - Status: 401 Unauthorized[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:172
+
+  [2m2025-05-31T07:04:37.930801Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"8ffb48ac-5339-413e-9d45-5d2c31c9f5ab","timestamp":"2025-05-31T07:04:37.930755Z","duration_ms":229.767,"request":{"method":"POST","path":"/api/v1/zkpersona/auth/login"},"response":{"status":"❌ error","body":{"id":"8ffb48ac-5339-413e-9d45-5d2c31c9f5ab","status":1,"type":"error","data":null,"error":{"type":"UNKNOWN_ERROR","code":401,"message":"An unexpected error occurred"},"meta":{"timestamp":"2025-05-31T07:04:37.930706Z"}},"size":219},"error":{}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
+  [2m2025-05-31T07:04:37.932950Z[0m [32m INFO[0m  [32m>>> MIDDLEWARE   - mw_ctx_require_user_auth[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:27
+
+  [2m2025-05-31T07:04:37.933033Z[0m [31mERROR[0m  [31mNo auth token found in cookies[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_user_auth.rs:86
+
+  [2m2025-05-31T07:04:37.933094Z[0m [31mERROR[0m  [31mRequest failed: POST /api/v1/zkpersona/generate-proof - Status: 401 Unauthorized[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:172
+
+  [2m2025-05-31T07:04:37.933159Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"0319767b-d204-4371-851e-e3843753e303","timestamp":"2025-05-31T07:04:37.933125Z","duration_ms":0.269,"request":{"method":"POST","path":"/api/v1/zkpersona/generate-proof"},"response":{"status":"❌ error","body":{"id":"0319767b-d204-4371-851e-e3843753e303","status":1,"type":"error","data":null,"error":{"type":"UNKNOWN_ERROR","code":401,"message":"An unexpected error occurred"},"meta":{"timestamp":"2025-05-31T07:04:37.933074Z"}},"size":219},"error":{}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
+  [2m2025-05-31T07:04:37.934844Z[0m [32m INFO[0m  [32mVerify proof request received[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/unified_endpoints.rs:159
+
+  [2m2025-05-31T07:04:37.934921Z[0m [32m INFO[0m  [32mProof verification result: true[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/unified_endpoints.rs:181
+
+  [2m2025-05-31T07:04:37.934976Z[0m [32m INFO[0m  [32mRequest completed successfully: POST - /api/v1/zkpersona/verify[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:175
+
+  [2m2025-05-31T07:04:37.935020Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"5fe02cd3-819a-4910-8dfe-7ff62d214807","timestamp":"2025-05-31T07:04:37.934988Z","duration_ms":0.43,"request":{"method":"POST","path":"/api/v1/zkpersona/verify"},"response":{"status":"✅ success","body":{"id":"5fe02cd3-819a-4910-8dfe-7ff62d214807","status":0,"type":"success","data":{"valid":true,"proof_id":"abde3ed7-b113-42bf-9490-698bdbc63d00","success":true,"message":"Proof verified successfully"},"error":null,"meta":{"timestamp":"2025-05-31T07:04:37.93496Z"}},"size":263}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
+  [2m2025-05-31T07:04:37.936237Z[0m [32m INFO[0m  [32mWallet login request for: 0x9999999999999999999999999999999999999999[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:111
+
+  [2m2025-05-31T07:04:37.937006Z[0m [32m INFO[0m  [32mInitializing database connection pool...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:164
+
+  [2m2025-05-31T07:04:38.149974Z[0m [32m INFO[0m  [32mDatabase connection pool initialized successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:172
+
+  [2m2025-05-31T07:04:38.151262Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT 1", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 833.667µs, [1;34melapsed_secs[0m[34m: 0.000833667[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.151298Z[0m [32m INFO[0m  [32mDatabase connection test successful[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:231
+
+  [2m2025-05-31T07:04:38.151309Z[0m [32m INFO[0m  [32mRunning database migrations...[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:239
+
+  [2m2025-05-31T07:04:38.152340Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 686.292µs, [1;34melapsed_secs[0m[34m: 0.000686292[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.153084Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_lock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 685.125µs, [1;34melapsed_secs[0m[34m: 0.000685125[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.153478Z[0m [32m INFO[0m  [32mrelation "_sqlx_migrations" already exists, skipping[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-postgres-0.8.6/src/connection/stream.rs:185
+
+  [2m2025-05-31T07:04:38.153511Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "CREATE TABLE IF NOT …", [1;34mdb.statement[0m[34m: "\n\n\nCREATE TABLE IF NOT EXISTS _sqlx_migrations (\n    version BIGINT PRIMARY KEY,\n    description TEXT NOT NULL,\n    installed_on TIMESTAMPTZ NOT NULL DEFAULT now(),\n    success BOOLEAN NOT NULL,\n    checksum BYTEA NOT NULL,\n    execution_time BIGINT NOT NULL\n);\n                \n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 395.042µs, [1;34melapsed_secs[0m[34m: 0.000395042[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.154821Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version FROM _sqlx_migrations …", [1;34mdb.statement[0m[34m: "\n\nSELECT version FROM _sqlx_migrations WHERE success = false ORDER BY version LIMIT 1\n", [1;34mrows_affected[0m[34m: 0, [1;34mrows_returned[0m[34m: 0, [1;34melapsed[0m[34m: 1.282917ms, [1;34melapsed_secs[0m[34m: 0.001282917[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.155484Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT version, checksum FROM …", [1;34mdb.statement[0m[34m: "\n\nSELECT version, checksum FROM _sqlx_migrations ORDER BY version\n", [1;34mrows_affected[0m[34m: 4, [1;34mrows_returned[0m[34m: 4, [1;34melapsed[0m[34m: 634.083µs, [1;34melapsed_secs[0m[34m: 0.000634083[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.155812Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT current_database()", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 272.417µs, [1;34melapsed_secs[0m[34m: 0.000272417[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.156382Z[0m [34mDEBUG[0m  [1;34msummary[0m[34m: "SELECT pg_advisory_unlock($1)", [1;34mdb.statement[0m[34m: "", [1;34mrows_affected[0m[34m: 1, [1;34mrows_returned[0m[34m: 1, [1;34melapsed[0m[34m: 543.125µs, [1;34melapsed_secs[0m[34m: 0.000543125[0m
+    [2;3mat[0m /Users/dangeamon/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.8.6/src/logger.rs:143
+
+  [2m2025-05-31T07:04:38.156402Z[0m [32m INFO[0m  [32mDatabase migrations completed successfully[0m
+    [2;3mat[0m crates/infrastructure/jd_storage/src/config.rs:245
+
+  [2m2025-05-31T07:04:38.156444Z[0m [32m INFO[0m  [32mAuthenticating wallet: 0x9999999999999999999999999999999999999999[0m
+    [2;3mat[0m crates/services/user_service/src/application/use_cases/user_use_cases.rs:60
+
+  [2m2025-05-31T07:04:38.157502Z[0m [31mERROR[0m  [31mFailed to authenticate wallet: Nonce not found[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/zkpersona/auth_endpoints.rs:161
+
+  [2m2025-05-31T07:04:38.157700Z[0m [31mERROR[0m  [31mRequest failed: POST /api/v1/zkpersona/auth/login - Status: 404 Not Found[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/middleware/mw_res_map.rs:172
+
+  [2m2025-05-31T07:04:38.157772Z[0m [32m INFO[0m  [32mREQUEST LOG: 
+ {"id":"7adf8b06-ff88-456f-81f5-ab5151f18b86","timestamp":"2025-05-31T07:04:38.157726Z","duration_ms":221.537,"request":{"method":"POST","path":"/api/v1/zkpersona/auth/login"},"response":{"status":"❌ error","body":{"id":"7adf8b06-ff88-456f-81f5-ab5151f18b86","status":1,"type":"error","data":null,"error":{"type":"UNKNOWN_ERROR","code":404,"message":"An unexpected error occurred"},"meta":{"timestamp":"2025-05-31T07:04:38.157669Z"}},"size":219},"error":{}}[0m
+    [2;3mat[0m crates/gateways/api_gateway/src/log/mod.rs:194
+
