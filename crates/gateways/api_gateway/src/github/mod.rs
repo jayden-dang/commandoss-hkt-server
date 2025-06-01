@@ -18,15 +18,15 @@ pub fn github_router() -> Router<AppState> {
     .route("/analyze", post(analyze_repository))
     // Original endpoints
     .route("/repositories", get(list_repositories).post(add_repository))
-    .route("/repositories/{id}", get(get_repository))
-    .route("/repositories/{id}/analysis", get(get_repository_analysis))
+    // .route("/repositories/{id}", get(get_repository))
+    .route("/repositories/{id}", get(get_repository_analysis))
     .route("/repositories/{id}/settings", put(update_repository_settings))
     .route("/webhooks/github", post(handle_github_webhook))
 }
 
 async fn health_check() -> axum::response::Json<serde_json::Value> {
-    axum::response::Json(serde_json::json!({
-        "status": "healthy",
-        "service": "github-service"
-    }))
+  axum::response::Json(serde_json::json!({
+      "status": "healthy",
+      "service": "github-service"
+  }))
 }

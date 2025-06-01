@@ -44,7 +44,8 @@ pub async fn analyze_repository(
   Json(payload): Json<Value>,
 ) -> std::result::Result<ResponseJson<Value>, StatusCode> {
   // Parse the repository information from the payload
-  let repository_id = payload.get("repository_id")
+  let repository_id = payload
+    .get("repository_id")
     .and_then(|v| v.as_str())
     .and_then(|s| Uuid::parse_str(s).ok())
     .ok_or_else(|| {
@@ -52,7 +53,8 @@ pub async fn analyze_repository(
       StatusCode::BAD_REQUEST
     })?;
 
-  let commit_sha = payload.get("commit_sha")
+  let commit_sha = payload
+    .get("commit_sha")
     .and_then(|v| v.as_str())
     .unwrap_or("0000000000000000000000000000000000000000") // Default 40-char SHA
     .to_string();
@@ -66,24 +68,25 @@ pub async fn analyze_repository(
   };
 
   // Parse owner and repo from payload
-  let owner = payload.get("owner")
+  let owner = payload
+    .get("owner")
     .and_then(|v| v.as_str())
     .unwrap_or("jayden-dang");
-  let repo = payload.get("repo") 
+  let repo = payload
+    .get("repo")
     .and_then(|v| v.as_str())
     .unwrap_or("aptos_onlyfans");
 
   // Create repository record if it doesn't exist
-  let repo_count: i64 = sqlx::query_scalar(
-    "SELECT COUNT(*) FROM github_repositories WHERE id = $1"
-  )
-  .bind(repository_id)
-  .fetch_one(app_state.mm().dbx().db())
-  .await
-  .map_err(|e| {
-    error!("Database error checking repository: {}", e);
-    StatusCode::INTERNAL_SERVER_ERROR
-  })?;
+  let repo_count: i64 =
+    sqlx::query_scalar("SELECT COUNT(*) FROM github_repositories WHERE id = $1")
+      .bind(repository_id)
+      .fetch_one(app_state.mm().dbx().db())
+      .await
+      .map_err(|e| {
+        error!("Database error checking repository: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+      })?;
 
   if repo_count == 0 {
     // Create repository record with real owner/repo data
@@ -93,7 +96,7 @@ pub async fn analyze_repository(
         id, github_repo_id, owner_username, repo_name, full_name,
         primary_language, is_private, star_count, fork_count, monitoring_enabled
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      "#
+      "#,
     )
     .bind(repository_id)
     .bind((repository_id.as_u128() % (i64::MAX as u128)) as i64 + 1) // Ensure positive value
@@ -114,47 +117,47 @@ pub async fn analyze_repository(
   }
 
   // Set up AI analysis service
-  use crate::ai_analysis::analysis_routes::integration::{setup_ai_analysis_service, AiAnalysisServiceConfig};
+  use crate::ai_analysis::analysis_routes::integration::{
+    setup_ai_analysis_service, AiAnalysisServiceConfig,
+  };
 
   let ai_config = AiAnalysisServiceConfig {
     app_state: app_state.clone(),
     openai_api_key: std::env::var("OPENAI_API_KEY").ok(),
     anthropic_api_key: std::env::var("ANTHROPIC_API_KEY").ok(),
-    enable_llm_analysis: std::env::var("ENABLE_LLM_ANALYSIS").unwrap_or("false".to_string()) == "true",
+    enable_llm_analysis: std::env::var("ENABLE_LLM_ANALYSIS").unwrap_or("false".to_string())
+      == "true",
   };
 
   let (analysis_handler, _github_integration) = setup_ai_analysis_service(ai_config);
 
   // Create analysis request
-  use ai_analysis_service::models::requests::AnalyzeRepositoryRequest;
   use ai_analysis_service::domain::analysis_models::AnalysisType;
+  use ai_analysis_service::models::requests::AnalyzeRepositoryRequest;
 
   let analysis_request = AnalyzeRepositoryRequest {
     repository_id,
     commit_sha: commit_sha.clone(),
     files_to_analyze: None, // Will analyze all smart contract files
-    analysis_types: vec![
-      AnalysisType::StaticAnalysis,
-      AnalysisType::VulnerabilityDetection,
-    ],
-    enable_llm_analysis: Some(std::env::var("ENABLE_LLM_ANALYSIS").unwrap_or("false".to_string()) == "true"),
+    analysis_types: vec![AnalysisType::StaticAnalysis, AnalysisType::VulnerabilityDetection],
+    enable_llm_analysis: Some(
+      std::env::var("ENABLE_LLM_ANALYSIS").unwrap_or("false".to_string()) == "true",
+    ),
   };
 
   // Fetch real files from GitHub repository
   let mut file_contents = std::collections::HashMap::new();
-    
+
   info!("Fetching files from GitHub repository: {}/{}", owner, repo);
-  
+
   // Fetch files from the real GitHub repository
   match fetch_github_files(owner, repo).await {
     Ok(files) => {
       if files.is_empty() {
         error!("No Move files found in repository {}/{}", owner, repo);
         // Fallback to sample code for testing
-        file_contents.insert(
-          "sources/sample.move".to_string(),
-          "module sample::empty { }".to_string(),
-        );
+        file_contents
+          .insert("sources/sample.move".to_string(), "module sample::empty { }".to_string());
       } else {
         file_contents = files;
         info!("Successfully fetched {} files from {}/{}", file_contents.len(), owner, repo);
@@ -163,15 +166,16 @@ pub async fn analyze_repository(
     Err(e) => {
       error!("Failed to fetch files from GitHub {}/{}: {}", owner, repo, e);
       // Fallback to sample code for testing
-      file_contents.insert(
-        "sources/sample.move".to_string(),
-        "module sample::empty { }".to_string(),
-      );
+      file_contents
+        .insert("sources/sample.move".to_string(), "module sample::empty { }".to_string());
     }
   }
 
   // Perform the analysis
-  match analysis_handler.analyze_repository(analysis_request, file_contents).await {
+  match analysis_handler
+    .analyze_repository(analysis_request, file_contents)
+    .await
+  {
     Ok(result) => {
       let response = json!({
         "status": "completed",
@@ -313,10 +317,7 @@ pub async fn get_repository_analysis(
 
   let repo_row = repo_row.ok_or_else(|| {
     error!("Repository not found: {}", id);
-    ApiError::RouteNotFound {
-      path: format!("/repositories/{}", id),
-      method: "GET".to_string(),
-    }
+    ApiError::RouteNotFound { path: format!("/repositories/{}", id), method: "GET".to_string() }
   })?;
 
   let owner: String = repo_row.get("owner_username");
@@ -344,7 +345,7 @@ pub async fn get_repository_analysis(
   // Get vulnerabilities
   let vulnerability_rows = sqlx::query(
     r#"
-    SELECT id, vulnerability_type, severity, confidence_score, file_path, line_number, description, recommendation, is_false_positive, fixed_at
+    SELECT id, vulnerability_type::text, severity::text, confidence_score, file_path, line_number, description, recommendation, is_false_positive, fixed_at
     FROM security_vulnerabilities 
     WHERE repository_id = $1 
     ORDER BY 
@@ -368,40 +369,59 @@ pub async fn get_repository_analysis(
   // Calculate statistics
   let total_analyses = analysis_rows.len();
   let total_vulnerabilities = vulnerability_rows.len();
-  let critical_vulnerabilities = vulnerability_rows.iter().filter(|row| {
-    let severity: String = row.get("severity");
-    severity == "critical"
-  }).count();
-  let high_vulnerabilities = vulnerability_rows.iter().filter(|row| {
-    let severity: String = row.get("severity");
-    severity == "high"
-  }).count();
-  let medium_vulnerabilities = vulnerability_rows.iter().filter(|row| {
-    let severity: String = row.get("severity");
-    severity == "medium"
-  }).count();
-  let low_vulnerabilities = vulnerability_rows.iter().filter(|row| {
-    let severity: String = row.get("severity");
-    severity == "low"
-  }).count();
-  let fixed_vulnerabilities = vulnerability_rows.iter().filter(|row| {
-    let fixed_at: Option<chrono::DateTime<chrono::Utc>> = row.get("fixed_at");
-    fixed_at.is_some()
-  }).count();
-  let false_positives = vulnerability_rows.iter().filter(|row| {
-    let is_false_positive: bool = row.get("is_false_positive");
-    is_false_positive
-  }).count();
+  let critical_vulnerabilities = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let severity: String = row.get("severity");
+      severity == "critical"
+    })
+    .count();
+  let high_vulnerabilities = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let severity: String = row.get("severity");
+      severity == "high"
+    })
+    .count();
+  let medium_vulnerabilities = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let severity: String = row.get("severity");
+      severity == "medium"
+    })
+    .count();
+  let low_vulnerabilities = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let severity: String = row.get("severity");
+      severity == "low"
+    })
+    .count();
+  let fixed_vulnerabilities = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let fixed_at: Option<chrono::DateTime<chrono::Utc>> = row.get("fixed_at");
+      fixed_at.is_some()
+    })
+    .count();
+  let false_positives = vulnerability_rows
+    .iter()
+    .filter(|row| {
+      let is_false_positive: bool = row.get("is_false_positive");
+      is_false_positive
+    })
+    .count();
 
   // Get latest analysis scores
-  let (latest_security_score, latest_quality_score, last_analyzed_at) = if let Some(latest_row) = analysis_rows.first() {
-    let sec_score: rust_decimal::Decimal = latest_row.get("security_score");
-    let qual_score: rust_decimal::Decimal = latest_row.get("quality_score");
-    let analyzed_at: chrono::DateTime<chrono::Utc> = latest_row.get("ctime");
-    (sec_score.to_f64().unwrap_or(0.0), qual_score.to_f64().unwrap_or(0.0), Some(analyzed_at))
-  } else {
-    (0.0, 0.0, None)
-  };
+  let (latest_security_score, latest_quality_score, last_analyzed_at) =
+    if let Some(latest_row) = analysis_rows.first() {
+      let sec_score: rust_decimal::Decimal = latest_row.get("security_score");
+      let qual_score: rust_decimal::Decimal = latest_row.get("quality_score");
+      let analyzed_at: chrono::DateTime<chrono::Utc> = latest_row.get("ctime");
+      (sec_score.to_f64().unwrap_or(0.0), qual_score.to_f64().unwrap_or(0.0), Some(analyzed_at))
+    } else {
+      (0.0, 0.0, None)
+    };
 
   // Build response
   let response = json!({
@@ -439,7 +459,7 @@ pub async fn get_repository_analysis(
       let critical_issues: i32 = row.get("critical_issues");
       let duration: i32 = row.get("analysis_duration_ms");
       let analyzed_at: chrono::DateTime<chrono::Utc> = row.get("ctime");
-      
+
       json!({
         "analysis_id": analysis_id,
         "commit_sha": commit_sha,
@@ -462,7 +482,7 @@ pub async fn get_repository_analysis(
       let recommendation: String = row.get("recommendation");
       let is_false_positive: bool = row.get("is_false_positive");
       let fixed_at: Option<chrono::DateTime<chrono::Utc>> = row.get("fixed_at");
-      
+
       json!({
         "id": vuln_id,
         "type": vuln_type,
@@ -495,7 +515,9 @@ pub async fn handle_webhook_enhanced(
   Query(query): Query<github_service::application::handlers::webhook_handler::WebhookQuery>,
   headers: HeaderMap,
   payload: axum::body::Bytes,
-) -> Result<ResponseJson<github_service::application::handlers::webhook_handler::WebhookProcessingResponse>> {
+) -> Result<
+  ResponseJson<github_service::application::handlers::webhook_handler::WebhookProcessingResponse>,
+> {
   let webhook_handler = create_webhook_handler(&app_state).map_err(|e| {
     error!("Failed to create GitHub webhook handler: {}", e);
     ApiError::service_error("github", 500, Some(e.to_string()))
@@ -622,24 +644,23 @@ fn map_github_error(error: github_service::Error) -> ApiError {
 }
 
 // Function to fetch real files from GitHub repository
-async fn fetch_github_files(owner: &str, repo: &str) -> std::result::Result<HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
+async fn fetch_github_files(
+  owner: &str,
+  repo: &str,
+) -> std::result::Result<HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
   let mut file_contents = HashMap::new();
-  
+
   // GitHub API endpoints for repository contents
   let base_url = format!("https://api.github.com/repos/{}/{}/contents", owner, repo);
-  
+
   // List of directories to check for Move files
   let directories = vec!["sources", "tests", "scripts", ""];
-  
+
   for dir in directories {
-    let url = if dir.is_empty() {
-      base_url.clone()
-    } else {
-      format!("{}/{}", base_url, dir)
-    };
-    
+    let url = if dir.is_empty() { base_url.clone() } else { format!("{}/{}", base_url, dir) };
+
     info!("Fetching directory contents from: {}", url);
-    
+
     // Make request to GitHub API
     let response = match reqwest::get(&url).await {
       Ok(resp) => resp,
@@ -648,12 +669,12 @@ async fn fetch_github_files(owner: &str, repo: &str) -> std::result::Result<Hash
         continue;
       }
     };
-    
+
     if !response.status().is_success() {
       warn!("GitHub API returned status {} for directory {}", response.status(), dir);
       continue;
     }
-    
+
     let contents: Vec<serde_json::Value> = match response.json().await {
       Ok(json) => json,
       Err(e) => {
@@ -661,7 +682,7 @@ async fn fetch_github_files(owner: &str, repo: &str) -> std::result::Result<Hash
         continue;
       }
     };
-    
+
     // Process each file in the directory
     for item in contents {
       if let (Some(name), Some(file_type), Some(download_url)) = (
@@ -672,18 +693,15 @@ async fn fetch_github_files(owner: &str, repo: &str) -> std::result::Result<Hash
         // Only process Move files
         if file_type == "file" && name.ends_with(".move") {
           info!("Fetching Move file: {}", name);
-          
+
           // Download the file content
           match reqwest::get(download_url).await {
             Ok(file_response) => {
               if file_response.status().is_success() {
                 match file_response.text().await {
                   Ok(content) => {
-                    let file_path = if dir.is_empty() {
-                      name.to_string()
-                    } else {
-                      format!("{}/{}", dir, name)
-                    };
+                    let file_path =
+                      if dir.is_empty() { name.to_string() } else { format!("{}/{}", dir, name) };
                     file_contents.insert(file_path, content);
                     info!("Successfully fetched file: {}", name);
                   }
@@ -699,7 +717,7 @@ async fn fetch_github_files(owner: &str, repo: &str) -> std::result::Result<Hash
       }
     }
   }
-  
+
   if file_contents.is_empty() {
     Err("No Move files found in repository".to_string().into())
   } else {
