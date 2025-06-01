@@ -19,6 +19,7 @@ pub fn github_router() -> Router<AppState> {
     // Original endpoints
     .route("/repositories", get(list_repositories).post(add_repository))
     .route("/repositories/{id}", get(get_repository))
+    .route("/repositories/{id}/analysis", get(get_repository_analysis))
     .route("/repositories/{id}/settings", put(update_repository_settings))
     .route("/webhooks/github", post(handle_github_webhook))
 }

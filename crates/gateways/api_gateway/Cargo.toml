@@ -63,6 +63,7 @@ jd_domain = { path = "../../shared/jd_domain" }
 jd_storage = { path = "../../infrastructure/jd_storage" }
 
 # -- Internal Dependencies - Services
+ai_analysis_service = { path = "../../services/ai_analysis_service" }
 behavior_service = { path = "../../services/behavior_service" }
 scoring_service = { path = "../../services/scoring_service" }
 zkproof_service = { path = "../../services/zkproof_service" }

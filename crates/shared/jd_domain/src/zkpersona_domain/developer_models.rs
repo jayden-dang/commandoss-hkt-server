@@ -111,6 +111,7 @@ pub struct GitHubRepositoryForCreate {
     pub github_repo_id: i64,
     pub owner_username: String,
     pub repo_name: String,
+    pub full_name: String,
     pub description: Option<String>,
     pub primary_language: Option<String>,
     pub is_private: bool,

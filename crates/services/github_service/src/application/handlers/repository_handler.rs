@@ -96,6 +96,7 @@ impl RepositoryHandler {
             github_repo_id: github_repo.id as i64,
             owner_username: github_repo.owner.login.clone(),
             repo_name: github_repo.name.clone(),
+            full_name: github_repo.full_name.clone(),
             description: github_repo.description.clone(),
             primary_language: github_repo.language.clone(),
             is_private: false, // Assume public repositories for now

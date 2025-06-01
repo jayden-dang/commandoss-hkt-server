@@ -1,0 +1,39 @@
+[package]
+name = "ai_analysis_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Core dependencies
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+time = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+
+# HTTP client for LLM APIs
+reqwest = { workspace = true }
+
+# Web framework
+axum = { workspace = true }
+
+# Regex for pattern matching
+regex = { workspace = true }
+
+# Internal dependencies
+jd_core = { path = "../../core/jd_core" }
+jd_storage = { path = "../../infrastructure/jd_storage" }
+jd_domain = { path = "../../shared/jd_domain" }
+
+# Additional dependencies for new implementation
+rust_decimal = { workspace = true }
+modql = { workspace = true }
+dotenv = { workspace = true }

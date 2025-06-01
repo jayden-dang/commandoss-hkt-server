@@ -15,6 +15,7 @@ members = [
   "crates/infrastructure/jd_tracing",
 
   # -- Services Application
+  "crates/services/ai_analysis_service",
   "crates/services/analytics_service",
   "crates/services/vulnerability_service",
   "crates/services/patch_service",
@@ -142,3 +143,4 @@ sui-sdk = { git = "https://github.com/mystenlabs/sui", package = "sui-sdk" }
 sui-keys = { git = "https://github.com/mystenlabs/sui", package = "sui-keys" }
 sui-types = { git = "https://github.com/mystenlabs/sui", package = "sui-types" }
 fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", package = "fastcrypto", features = ["copy_key"] }
+

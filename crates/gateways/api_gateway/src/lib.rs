@@ -1,7 +1,9 @@
 use axum::{middleware as axum_middleware, Router, response::Json};
 use jd_core::AppState;
 use serde_json::json;
+use std::sync::Arc;
 
+mod ai_analysis;
 mod analytics;
 mod developers;
 mod error;
@@ -23,6 +25,7 @@ async fn health_check() -> Json<serde_json::Value> {
         "version": "1.0.0"
     }))
 }
+
 
 pub fn v1_routes(app_state: AppState) -> Router {
   let mm = app_state.mm.as_ref().clone();
