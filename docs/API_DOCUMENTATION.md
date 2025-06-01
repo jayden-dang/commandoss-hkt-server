@@ -16,197 +16,7 @@ Current version: `v1`
 
 All API endpoints are prefixed with `/api/v1/`
 
-## Table of Contents
-
-1. [Authentication](#authentication)
-2. [ZK-Persona Service](#zk-persona-service)
-3. [Analytics Service](#analytics-service)
-4. [Vulnerability Service](#vulnerability-service)
-5. [Patch Service](#patch-service)
-6. [Developer Service](#developer-service)
-7. [GitHub Service](#github-service)
-8. [SUI Service](#sui-service)
-9. [RPC Endpoints](#rpc-endpoints)
-10. [Error Handling](#error-handling)
-11. [WebSocket Events](#websocket-events)
-
----
-
-## Authentication
-
-### Overview
-
-The platform uses JWT-based authentication with SUI wallet integration for ZK-Persona features.
-
-### Generate Nonce
-
-Generate a nonce for wallet signature verification.
-
-```http
-POST /api/v1/zkpersona/auth/nonce
-```
-
-#### Request Body
-
-```json
-{
-  "address": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-}
-```
-
-#### Response
-
-```json
-{
-  "data": {
-    "nonce": "random_nonce_string_here",
-    "expires_at": "2024-01-15T12:00:00Z"
-  }
-}
-```
-
-### Login
-
-Authenticate with wallet signature.
-
-```http
-POST /api/v1/zkpersona/auth/login
-```
-
-#### Request Body
-
-```json
-{
-  "address": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-  "signature": "signature_of_nonce",
-  "public_key": "user_public_key"
-}
-```
-
-#### Response
-
-```json
-{
-  "data": {
-    "access_token": "jwt_token_here",
-    "refresh_token": "refresh_token_here",
-    "expires_in": 3600,
-    "user": {
-      "id": "user_id",
-      "address": "0x1234...",
-      "created_at": "2024-01-15T10:00:00Z"
-    }
-  }
-}
-```
-
-### Protected Endpoints
-
-For protected endpoints, include the JWT token in the Authorization header:
-
-```http
-Authorization: Bearer <jwt_token>
-```
-
----
-
 ## ZK-Persona Service
-
-### Generate Proof (Protected)
-
-Generate a ZK proof for user behavior and reputation.
-
-```http
-POST /api/v1/zkpersona/generate-proof
-Authorization: Bearer <jwt_token>
-```
-
-#### Request Body
-
-```json
-{
-  "behavior_input": {
-    "transactions": [
-      {
-        "type": "swap",
-        "amount": 1000,
-        "timestamp": "2024-01-01T00:00:00Z"
-      },
-      {
-        "type": "stake",
-        "amount": 500,
-        "timestamp": "2024-01-02T00:00:00Z"
-      }
-    ],
-    "interactions": {
-      "dao_votes": 3,
-      "nft_trades": 2,
-      "defi_protocols": ["uniswap", "aave", "compound"]
-    }
-  },
-  "session_id": "unique-session-id"
-}
-```
-
-#### Response
-
-```json
-{
-  "data": {
-    "proof_id": "proof_uuid",
-    "proof_data": "base64_encoded_proof",
-    "verification_key": "verification_key_data",
-    "public_signals": {
-      "reputation_score": 85,
-      "activity_level": "high",
-      "verified_timestamp": "2024-01-15T12:00:00Z"
-    },
-    "metadata": {
-      "circuit_version": "1.0.0",
-      "proving_time_ms": 1234
-    }
-  }
-}
-```
-
-### Verify Proof (Public)
-
-Verify a ZK proof.
-
-```http
-POST /api/v1/zkpersona/verify
-```
-
-#### Request Body
-
-```json
-{
-  "proof_data": "base64_encoded_proof",
-  "verification_key": "verification_key_data",
-  "public_signals": {
-    "reputation_score": 85,
-    "activity_level": "high",
-    "verified_timestamp": "2024-01-15T12:00:00Z"
-  }
-}
-```
-
-#### Response
-
-```json
-{
-  "valid": true,
-  "verified_at": "2024-01-15T12:05:00Z",
-  "public_outputs": {
-    "reputation_score": 85,
-    "activity_level": "high"
-  }
-}
-```
-
----
-
-## Analytics Service
 
 ### Get Metrics
 
@@ -1723,12 +1533,12 @@ use jdblog_sdk::{Client, Config};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::new("http://localhost:8080")
         .with_api_key("your_api_key");
-    
+
     let client = Client::new(config);
-    
+
     // Get network info
     let network_info = client.sui().network_info().await?;
-    
+
     // List patches
     let patches = client.patches()
         .list()
@@ -1737,7 +1547,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .status("approved")
         .execute()
         .await?;
-    
+
     Ok(())
 }
 ```

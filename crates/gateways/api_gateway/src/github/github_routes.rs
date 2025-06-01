@@ -140,7 +140,33 @@ pub async fn update_repository_settings(
     })
 }
 
-/// Handle GitHub webhook events
+/// Handle GitHub webhook events with enhanced processing
+pub async fn handle_webhook_enhanced(
+  State(app_state): State<AppState>,
+  Query(query): Query<github_service::application::handlers::webhook_handler::WebhookQuery>,
+  headers: HeaderMap,
+  payload: axum::body::Bytes,
+) -> Result<ResponseJson<github_service::application::handlers::webhook_handler::WebhookProcessingResponse>> {
+  let webhook_handler = create_webhook_handler(&app_state).map_err(|e| {
+    error!("Failed to create GitHub webhook handler: {}", e);
+    ApiError::service_error("github", 500, Some(e.to_string()))
+  })?;
+
+  webhook_handler
+    .handle_webhook(headers, axum::extract::Query(query), payload.to_vec())
+    .await
+    .map(ResponseJson)
+    .map_err(|(status, json_error)| {
+      error!("Webhook processing error: {}", json_error.0.error);
+      match status {
+        StatusCode::BAD_REQUEST => ApiError::InvalidRequestFormat { message: json_error.0.error },
+        StatusCode::UNAUTHORIZED => ApiError::ApiKeyAuthFailed { reason: json_error.0.error },
+        _ => ApiError::service_error("github", 500, Some(json_error.0.error)),
+      }
+    })
+}
+
+/// Handle GitHub webhook events (legacy)
 pub async fn handle_github_webhook(
   State(app_state): State<AppState>,
   headers: HeaderMap,

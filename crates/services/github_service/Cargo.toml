@@ -36,13 +36,17 @@ uuid.workspace = true
 # Logging
 tracing.workspace = true
 
-# Crypto for webhook verification
+# Crypto for webhook verification and JWT
 hmac = "0.12"
 sha2 = "0.10"
 hex = "0.4"
+jsonwebtoken = "9.0"
+base64 = "0.21"
 
 # HTTP client
 reqwest.workspace = true
+futures = "0.3"
+tempfile = "3.0"
 
 # Database
 sqlx.workspace = true
