@@ -1,0 +1,124 @@
+# Docker Compose for ZK-Guardian GitHub Integration
+# For local development and testing
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: zkguardian-postgres
+    environment:
+      POSTGRES_DB: zkguardian
+      POSTGRES_USER: jayden
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    networks:
+      - zkguardian-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jayden -d zkguardian"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: zkguardian-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - zkguardian-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ZK-Guardian Application
+  zkguardian:
+    image: zkguardian-github:latest
+    container_name: zkguardian-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Database
+      - DATABASE_URL=postgres://jayden:postgres@postgres:5432/zkguardian
+      - REDIS_URL=redis://redis:6379/
+      
+      # Server
+      - HOST=0.0.0.0
+      - PORT=8080
+      - WEB_ADDR=0.0.0.0:8080
+      
+      # GitHub Integration (Configure these with your values)
+      # Option 1: GitHub App
+      # - GITHUB_APP_ID=your_app_id
+      # - GITHUB_PRIVATE_KEY_PATH=/deploy/github-app-private-key.pem
+      # - GITHUB_WEBHOOK_SECRET=your_webhook_secret
+      
+      # Option 2: Personal Token
+      # - GITHUB_TOKEN=ghp_your_personal_token
+      # - GITHUB_WEBHOOK_SECRET=your_webhook_secret
+      
+      # GitHub Service
+      - WEBHOOK_BASE_URL=http://localhost:8080
+      - GITHUB_MAX_QUEUE_SIZE=1000
+      - GITHUB_RATE_LIMIT_PER_HOUR=5000
+      
+      # Logging
+      - RUST_LOG=info
+      - RUST_BACKTRACE=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/deploy/logs
+      - ./data:/deploy/data
+      - ./github-app-private-key.pem:/deploy/github-app-private-key.pem:ro
+    networks:
+      - zkguardian-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: zkguardian-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - zkguardian
+    networks:
+      - zkguardian-network
+    profiles:
+      - production
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  zkguardian-network:
+    driver: bridge

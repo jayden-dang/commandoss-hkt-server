@@ -33,41 +33,40 @@ pub struct GitHubServiceConfig {
 }
 
 impl GitHubServiceConfig {
-    pub fn from_env() -> Result<Self> {
-        let github_token = std::env::var("GITHUB_TOKEN").ok();
-        let github_app_id = std::env::var("GITHUB_APP_ID")
-            .ok()
-            .and_then(|s| s.parse().ok());
-        let github_private_key = if let Ok(key_path) = std::env::var("GITHUB_PRIVATE_KEY_PATH") {
+    pub fn from_config(config: &jd_utils::config::Config) -> Result<Self> {
+        let github_config = config.github.as_ref()
+            .ok_or_else(|| Error::ConfigurationError("GitHub configuration not found".to_string()))?;
+        
+        let github_private_key = if let Some(key_path) = &github_config.private_key_path {
             std::fs::read_to_string(key_path).ok()
         } else {
-            std::env::var("GITHUB_PRIVATE_KEY").ok()
+            github_config.private_key.clone()
         };
 
         // Ensure we have either personal token or app credentials
-        if github_token.is_none() && (github_app_id.is_none() || github_private_key.is_none()) {
+        if github_config.token.is_none() && (github_config.app_id.is_none() || github_private_key.is_none()) {
             return Err(Error::ConfigurationError(
-                "Either GITHUB_TOKEN or (GITHUB_APP_ID + GITHUB_PRIVATE_KEY) must be set".to_string()
+                "Either GITHUB.TOKEN or (GITHUB.APP_ID + GITHUB.PRIVATE_KEY) must be set".to_string()
             ));
         }
 
         Ok(Self {
-            github_token,
-            github_app_id,
+            github_token: github_config.token.clone(),
+            github_app_id: github_config.app_id,
             github_private_key,
-            webhook_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
-                .map_err(|_| Error::ConfigurationError("GITHUB_WEBHOOK_SECRET not set".to_string()))?,
-            webhook_base_url: std::env::var("WEBHOOK_BASE_URL")
-                .unwrap_or_else(|_| "http://localhost:3000".to_string()),
-            max_queue_size: std::env::var("GITHUB_MAX_QUEUE_SIZE")
-                .unwrap_or_else(|_| "1000".to_string())
-                .parse()
-                .unwrap_or(1000),
-            rate_limit_per_hour: std::env::var("GITHUB_RATE_LIMIT_PER_HOUR")
-                .unwrap_or_else(|_| "5000".to_string())
-                .parse()
-                .unwrap_or(5000),
+            webhook_secret: github_config.webhook_secret.clone(),
+            webhook_base_url: github_config.webhook_base_url
+                .clone()
+                .unwrap_or_else(|| "http://localhost:3000".to_string()),
+            max_queue_size: github_config.max_queue_size.unwrap_or(1000),
+            rate_limit_per_hour: github_config.rate_limit_per_hour.unwrap_or(5000),
         })
+    }
+    
+    pub fn from_env() -> Result<Self> {
+        let config = jd_utils::config::Config::from_env()
+            .map_err(|e| Error::ConfigurationError(format!("Failed to load config: {}", e)))?;
+        Self::from_config(&config)
     }
 }
 

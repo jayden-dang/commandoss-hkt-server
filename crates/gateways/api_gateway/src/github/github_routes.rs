@@ -193,7 +193,7 @@ fn create_repository_handler(
 ) -> std::result::Result<RepositoryHandler, Box<dyn std::error::Error + Send + Sync>> {
   use github_service::{GitHubServiceConfig, GitHubServiceFactory};
 
-  let github_config = GitHubServiceConfig::from_env()?;
+  let github_config = GitHubServiceConfig::from_config(&app_state.config)?;
 
   let github_client = Arc::new(GitHubServiceFactory::create_client(&github_config)?);
   let analysis_queue = Arc::new(GitHubServiceFactory::create_analysis_queue(&github_config));
@@ -212,11 +212,11 @@ fn create_repository_handler(
 }
 
 fn create_webhook_handler(
-  _app_state: &AppState,
+  app_state: &AppState,
 ) -> std::result::Result<WebhookHandler, Box<dyn std::error::Error + Send + Sync>> {
   use github_service::{GitHubServiceConfig, GitHubServiceFactory};
 
-  let github_config = GitHubServiceConfig::from_env()?;
+  let github_config = GitHubServiceConfig::from_config(&app_state.config)?;
 
   let github_client = Arc::new(GitHubServiceFactory::create_client(&github_config)?);
   let analysis_queue = Arc::new(GitHubServiceFactory::create_analysis_queue(&github_config));

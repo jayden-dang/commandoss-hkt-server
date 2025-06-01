@@ -1,5 +1,6 @@
-use axum::{middleware as axum_middleware, Router};
+use axum::{middleware as axum_middleware, Router, response::Json};
 use jd_core::AppState;
+use serde_json::json;
 
 mod analytics;
 mod developers;
@@ -14,6 +15,14 @@ mod vulnerabilities;
 mod zkpersona;
 
 pub type Result<T> = std::result::Result<T, error::Error>;
+
+async fn health_check() -> Json<serde_json::Value> {
+    Json(json!({
+        "status": "healthy",
+        "service": "zkpersona-api",
+        "version": "1.0.0"
+    }))
+}
 
 pub fn v1_routes(app_state: AppState) -> Router {
   let mm = app_state.mm.as_ref().clone();
@@ -34,6 +43,7 @@ pub fn v1_routes(app_state: AppState) -> Router {
     .nest(
       "/api/v1",
       Router::<AppState>::new()
+        .route("/health", axum::routing::get(health_check))
         .nest("/analytics", analytics::analytics_router())
         .nest("/vulnerabilities", vulnerabilities::vulnerability_router())
         .nest("/patches", patches::patch_router())
