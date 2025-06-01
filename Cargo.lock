@@ -157,6 +157,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "analytics_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "chrono",
+ "jd_core",
+ "jd_domain",
+ "jd_storage",
+ "jd_utils",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sqlx",
+ "tokio",
+ "tower 0.5.2",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -319,6 +343,7 @@ dependencies = [
  "behavior_service",
  "chrono",
  "derive_more 2.0.1",
+ "developer_service",
  "github_service",
  "hyper 1.6.0",
  "jd_core",
@@ -2057,6 +2082,33 @@ dependencies = [
  "quote",
  "syn 2.0.101",
  "unicode-xid",
+]
+
+[[package]]
+name = "developer_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "chrono",
+ "jd_core",
+ "jd_domain",
+ "jd_storage",
+ "jd_utils",
+ "modql",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sqlx",
+ "time",
+ "tokio",
+ "tower 0.5.2",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -5548,6 +5600,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "patch_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "chrono",
+ "jd_core",
+ "jd_domain",
+ "jd_storage",
+ "jd_utils",
+ "modql",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "sea-query",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sqlx",
+ "time",
+ "tokio",
+ "tower 0.5.2",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "pathdiff"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6691,6 +6770,16 @@ dependencies = [
  "rkyv",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "rust_decimal_macros"
+version = "1.37.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6268b74858287e1a062271b988a0c534bf85bbeb567fe09331bf40ed78113d5"
+dependencies = [
+ "quote",
+ "syn 2.0.101",
 ]
 
 [[package]]
@@ -9619,6 +9708,30 @@ name = "vfs"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e4fe92cfc1bad19c19925d5eee4b30584dbbdee4ff10183b261acccbef74e2d"
+
+[[package]]
+name = "vulnerability_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "chrono",
+ "jd_core",
+ "jd_domain",
+ "jd_storage",
+ "jd_utils",
+ "rust_decimal",
+ "rust_decimal_macros",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sqlx",
+ "tokio",
+ "tower 0.5.2",
+ "tracing",
+ "uuid",
+]
 
 [[package]]
 name = "wait-timeout"

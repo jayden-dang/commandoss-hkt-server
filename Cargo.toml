@@ -15,6 +15,10 @@ members = [
   "crates/infrastructure/jd_tracing",
 
   # -- Services Application
+  "crates/services/analytics_service",
+  "crates/services/vulnerability_service",
+  "crates/services/patch_service",
+  "crates/services/developer_service",
   "crates/services/behavior_service",
   "crates/services/scoring_service",
   "crates/services/zkproof_service",
@@ -59,6 +63,7 @@ chrono = { version = "0.4.41", features = ["serde"] }
 # WEB FRAMEWORK & HTTP
 # ============================================================================
 axum = { version = "0.8", features = ["macros"] }
+tower = { version = "0.5", features = ["full"] }
 tower-http = { version = "0.6", features = ["fs", "cors"] }
 tower-cookies = "0.11"
 tokio = { version = "1.45.0", features = ["full"] }
@@ -93,6 +98,7 @@ uuid = { version = "1.16.0", features = ["v4", "fast-rng", "serde"] }
 strum = "0.26"
 strum_macros = "0.27.1"
 rust_decimal = { version = "1.36", features = ["serde-with-str"] }
+rust_decimal_macros = "1.36"
 
 # ============================================================================
 # LOGGING & TRACING

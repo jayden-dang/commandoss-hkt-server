@@ -1,3 +1,4 @@
+use auth_service::infrastructure::database::UserRepositoryImpl;
 use axum::{
   body::Body,
   extract::{Request, State},
@@ -7,12 +8,11 @@ use axum::{
 };
 use jd_core::{ctx::Ctx, AppState};
 use jd_domain::Id;
-use jd_storage::{config::{DatabaseConfig, DatabaseManager}};
+use jd_storage::config::{DatabaseConfig, DatabaseManager};
 use serde_json::json;
 use std::sync::Arc;
 use tower_cookies::{Cookie, Cookies};
 use tracing::{error, info};
-use auth_service::infrastructure::database::UserRepositoryImpl;
 
 pub const AUTH_TOKEN: &str = "auth-token";
 
@@ -31,9 +31,12 @@ pub async fn mw_ctx_require_user_auth(
 
   // For now, use a simple hash of the UUID as i64
   // In production, you might want to store a mapping
-  let user_id_i64 = user_id.to_string().chars().take(15).fold(1i64, |acc, c| {
-    acc.wrapping_add(c as i64).wrapping_mul(31)
-  }).abs();
+  let user_id_i64 = user_id
+    .to_string()
+    .chars()
+    .take(15)
+    .fold(1i64, |acc, c| acc.wrapping_add(c as i64).wrapping_mul(31))
+    .abs();
 
   // Create context with user ID
   let ctx = Ctx::new(user_id_i64).map_err(|e| {
@@ -60,10 +63,13 @@ pub async fn mw_ctx_optional_user_auth(
   // Try to get user ID from token, but don't fail if not present
   if let Ok(user_id) = get_user_id_from_token(&cookies, &app_state).await {
     // For now, use a simple hash of the UUID as i64
-    let user_id_i64 = user_id.to_string().chars().take(15).fold(1i64, |acc, c| {
-      acc.wrapping_add(c as i64).wrapping_mul(31)
-    }).abs();
-    
+    let user_id_i64 = user_id
+      .to_string()
+      .chars()
+      .take(15)
+      .fold(1i64, |acc, c| acc.wrapping_add(c as i64).wrapping_mul(31))
+      .abs();
+
     // Create context with user ID
     if let Ok(ctx) = Ctx::new(user_id_i64) {
       req.extensions_mut().insert(ctx);
@@ -74,10 +80,7 @@ pub async fn mw_ctx_optional_user_auth(
 }
 
 /// Extract user ID from authentication token
-async fn get_user_id_from_token(
-  cookies: &Cookies,
-  app_state: &AppState,
-) -> Result<Id, StatusCode> {
+async fn get_user_id_from_token(cookies: &Cookies, app_state: &AppState) -> Result<Id, StatusCode> {
   // Get auth token from cookies
   let auth_token = cookies
     .get(AUTH_TOKEN)
@@ -131,7 +134,7 @@ pub fn set_auth_cookie(cookies: &Cookies, user_id: &Id) {
     .secure(true)
     .same_site(tower_cookies::cookie::SameSite::Strict)
     .build();
-  
+
   cookies.add(cookie);
 }
 

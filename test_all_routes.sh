@@ -1,15 +1,21 @@
 #!/bin/bash
 
-# Comprehensive API Test Script for ZK-Persona Services
-# Tests all available routes after REST/RPC pattern refactor
+# Comprehensive API Test Script for JDBlog Server
+# Tests all available routes including ZK-Persona, Analytics, Vulnerabilities, Patches, Developers, SUI, and GitHub
 
 BASE_URL="http://localhost:8080"
-ZKPERSONA_URL="${BASE_URL}/api/v1/zkpersona"
-SUI_URL="${BASE_URL}/api/v1/sui"
+API_V1="${BASE_URL}/api/v1"
+ZKPERSONA_URL="${API_V1}/zkpersona"
+ANALYTICS_URL="${API_V1}/analytics"
+VULNERABILITIES_URL="${API_V1}/vulnerabilities"
+PATCHES_URL="${API_V1}/patches"
+DEVELOPERS_URL="${API_V1}/developers"
+SUI_URL="${API_V1}/sui"
+GITHUB_URL="${API_V1}/github"
 RPC_URL="${BASE_URL}/api"
 
-echo "🧪 Testing All ZK-Persona API Routes"
-echo "===================================="
+echo "🧪 Testing All JDBlog API Routes"
+echo "================================"
 echo "Base URL: $BASE_URL"
 echo ""
 
@@ -86,7 +92,7 @@ if [ "$NONCE_HTTP_CODE" = "200" ]; then
     echo -e "   ${GREEN}✅ PASS${NC} (Status: $NONCE_HTTP_CODE)"
     ((PASSED++))
     echo "$NONCE_BODY" | jq '.' 2>/dev/null || echo "$NONCE_BODY"
-    NONCE=$(echo "$NONCE_BODY" | jq -r '.nonce // empty' 2>/dev/null)
+    NONCE=$(echo "$NONCE_BODY" | jq -r '.data.nonce // empty' 2>/dev/null)
 else
     echo -e "   ${RED}❌ FAIL${NC} (Expected: 200, Got: $NONCE_HTTP_CODE)"
     ((FAILED++))
@@ -114,7 +120,7 @@ if [ -n "$NONCE" ]; then
         echo -e "   ${GREEN}✅ PASS${NC} (Status: $LOGIN_HTTP_CODE)"
         ((PASSED++))
         echo "$LOGIN_BODY" | jq '.' 2>/dev/null || echo "$LOGIN_BODY"
-        JWT_TOKEN=$(echo "$LOGIN_BODY" | jq -r '.access_token // empty' 2>/dev/null)
+        JWT_TOKEN=$(echo "$LOGIN_BODY" | jq -r '.data.access_token // empty' 2>/dev/null)
     else
         echo -e "   ${RED}❌ FAIL${NC} (Expected: 200, Got: $LOGIN_HTTP_CODE)"
         ((FAILED++))
@@ -127,6 +133,141 @@ else
 fi
 
 # ===============================
+# ANALYTICS SERVICE TESTS
+# ===============================
+echo -e "${YELLOW}📊 ANALYTICS SERVICE TESTS${NC}"
+echo "=========================="
+
+# Get metrics (GET)
+test_endpoint "Get Metrics" "GET" "${ANALYTICS_URL}/metrics" "" "200"
+
+# Get top repositories (GET)
+test_endpoint "Get Top Repositories" "GET" "${ANALYTICS_URL}/top-repositories?limit=10&time_period=week" "" "200"
+
+# Get activity trends (GET)
+test_endpoint "Get Activity Trends" "GET" "${ANALYTICS_URL}/trends/activity?period=daily&days=7" "" "200"
+
+# Get vulnerability trends (GET)
+test_endpoint "Get Vulnerability Trends" "GET" "${ANALYTICS_URL}/trends/vulnerabilities?period=weekly&weeks=4" "" "200"
+
+# ===============================
+# VULNERABILITY SERVICE TESTS
+# ===============================
+echo -e "${YELLOW}🐛 VULNERABILITY SERVICE TESTS${NC}"
+echo "==============================="
+
+# Generate test repository ID
+REPO_ID=$(uuidgen 2>/dev/null || echo "550e8400-e29b-41d4-a716-446655440000")
+
+# List vulnerabilities (GET)
+test_endpoint "List Vulnerabilities" "GET" "${VULNERABILITIES_URL}?page=1&limit=10" "" "200"
+
+# Get vulnerability by ID (GET) - Using a dummy UUID
+test_endpoint "Get Vulnerability by ID" "GET" "${VULNERABILITIES_URL}/550e8400-e29b-41d4-a716-446655440001" "" "404"
+
+# Search vulnerabilities (POST)
+test_endpoint "Search Vulnerabilities" "POST" "${VULNERABILITIES_URL}/search" '{
+    "query": "sql injection",
+    "limit": 5
+}' "200"
+
+# Get vulnerability types (GET)
+test_endpoint "Get Vulnerability Types" "GET" "${VULNERABILITIES_URL}/types" "" "200"
+
+# Get vulnerabilities by severity (GET)
+test_endpoint "Get Vulnerabilities by Severity" "GET" "${VULNERABILITIES_URL}/severity/high?page=1&limit=10" "" "200"
+
+# Get repository vulnerabilities (GET)
+test_endpoint "Get Repository Vulnerabilities" "GET" "${VULNERABILITIES_URL}/repository/${REPO_ID}?page=1&limit=10" "" "200"
+
+# Get repository vulnerability summary (GET)
+test_endpoint "Get Repository Vulnerability Summary" "GET" "${VULNERABILITIES_URL}/repository/${REPO_ID}/summary" "" "200"
+
+# ===============================
+# PATCH SERVICE TESTS
+# ===============================
+echo -e "${YELLOW}🔧 PATCH SERVICE TESTS${NC}"
+echo "======================="
+
+# List patches (GET)
+test_endpoint "List Patches" "GET" "${PATCHES_URL}?page=1&limit=10" "" "200"
+
+# Get patch by ID (GET) - Using a dummy UUID
+test_endpoint "Get Patch by ID" "GET" "${PATCHES_URL}/550e8400-e29b-41d4-a716-446655440002" "" "404"
+
+# Get patches by vulnerability (GET)
+test_endpoint "Get Patches by Vulnerability" "GET" "${PATCHES_URL}/vulnerability/550e8400-e29b-41d4-a716-446655440001" "" "200"
+
+# Get patches by repository (GET)
+test_endpoint "Get Patches by Repository" "GET" "${PATCHES_URL}/repository/${REPO_ID}?page=1&limit=10" "" "200"
+
+# Get AI patch suggestions (POST)
+test_endpoint "Get AI Patch Suggestions" "POST" "${PATCHES_URL}/ai-suggestions" '{
+    "vulnerability_id": "550e8400-e29b-41d4-a716-446655440001",
+    "context": {
+        "file_path": "src/main.rs",
+        "code_snippet": "let query = format!(\"SELECT * FROM users WHERE id = {}\", user_id);",
+        "language": "rust"
+    }
+}' "200"
+
+# ===============================
+# DEVELOPER SERVICE TESTS
+# ===============================
+echo -e "${YELLOW}👨‍💻 DEVELOPER SERVICE TESTS${NC}"
+echo "============================"
+
+# List developers (GET)
+test_endpoint "List Developers" "GET" "${DEVELOPERS_URL}?page=1&limit=10" "" "200"
+
+# Get developer by ID (GET) - Using a dummy UUID
+test_endpoint "Get Developer by ID" "GET" "${DEVELOPERS_URL}/550e8400-e29b-41d4-a716-446655440003" "" "404"
+
+# Search developers (POST)
+test_endpoint "Search Developers" "POST" "${DEVELOPERS_URL}/search" '{
+    "query": "rust",
+    "limit": 5
+}' "200"
+
+# Get developer statistics (GET)
+test_endpoint "Get Developer Statistics" "GET" "${DEVELOPERS_URL}/550e8400-e29b-41d4-a716-446655440003/statistics" "" "404"
+
+# Get developer's repositories (GET)
+test_endpoint "Get Developer Repositories" "GET" "${DEVELOPERS_URL}/550e8400-e29b-41d4-a716-446655440003/repositories?page=1&limit=10" "" "404"
+
+# Get developer's contributions (GET)
+test_endpoint "Get Developer Contributions" "GET" "${DEVELOPERS_URL}/550e8400-e29b-41d4-a716-446655440003/contributions?days=30" "" "404"
+
+# Get top developers (GET)
+test_endpoint "Get Top Developers" "GET" "${DEVELOPERS_URL}/top?metric=reputation&limit=10" "" "200"
+
+# ===============================
+# GITHUB SERVICE TESTS
+# ===============================
+echo -e "${YELLOW}🐙 GITHUB SERVICE TESTS${NC}"
+echo "========================"
+
+# GitHub webhook test (POST)
+test_endpoint "GitHub Webhook" "POST" "${GITHUB_URL}/webhook" '{
+    "action": "opened",
+    "pull_request": {
+        "id": 1,
+        "number": 123,
+        "title": "Test PR"
+    }
+}' "200"
+
+# Get repository info (GET)
+test_endpoint "Get GitHub Repository Info" "GET" "${GITHUB_URL}/repository/owner/repo" "" "200"
+
+# Analyze repository (POST)
+test_endpoint "Analyze GitHub Repository" "POST" "${GITHUB_URL}/analyze" '{
+    "owner": "test",
+    "repo": "test-repo",
+    "branch": "main"
+}' "200"
+
+# ===============================
 # SUI SERVICE TESTS
 # ===============================
 echo -e "${YELLOW}⚡ SUI SERVICE TESTS${NC}"
@@ -137,6 +278,15 @@ test_endpoint "SUI Health Check" "GET" "${SUI_URL}/health" "" "200"
 
 # Test SUI connection test (GET)
 test_endpoint "SUI Test Connection" "GET" "${SUI_URL}/test-connection" "" "200"
+
+# Get SUI network info (GET)
+test_endpoint "Get SUI Network Info" "GET" "${SUI_URL}/network-info" "" "200"
+
+# Sponsor transaction (POST)
+test_endpoint "Sponsor Transaction" "POST" "${SUI_URL}/sponsor-transaction" '{
+    "transaction_bytes": "mock_transaction_data",
+    "gas_budget": 1000000
+}' "200"
 
 # ===============================
 # ZKPERSONA PROOF GENERATION (PROTECTED)
@@ -177,9 +327,9 @@ if [ -n "$JWT_TOKEN" ]; then
         echo "$GENERATE_BODY" | jq '.' 2>/dev/null || echo "$GENERATE_BODY"
         
         # Extract proof data for verification
-        PROOF_DATA=$(echo "$GENERATE_BODY" | jq -r '.proof_data // empty' 2>/dev/null)
-        VERIFICATION_KEY=$(echo "$GENERATE_BODY" | jq -r '.verification_key // empty' 2>/dev/null)
-        PUBLIC_SIGNALS=$(echo "$GENERATE_BODY" | jq '.public_signals // {}' 2>/dev/null)
+        PROOF_DATA=$(echo "$GENERATE_BODY" | jq -r '.data.proof_data // empty' 2>/dev/null)
+        VERIFICATION_KEY=$(echo "$GENERATE_BODY" | jq -r '.data.verification_key // empty' 2>/dev/null)
+        PUBLIC_SIGNALS=$(echo "$GENERATE_BODY" | jq '.data.public_signals // {}' 2>/dev/null)
     else
         echo -e "   ${RED}❌ FAIL${NC} (Expected: 200, Got: $GENERATE_HTTP_CODE)"
         ((FAILED++))
@@ -257,7 +407,7 @@ echo -e "📊 Total:  $(($PASSED + $FAILED))"
 echo ""
 
 if [ $FAILED -eq 0 ]; then
-    echo -e "${GREEN}🎉 All tests passed! REST/RPC refactor successful!${NC}"
+    echo -e "${GREEN}🎉 All tests passed!${NC}"
     exit 0
 else
     echo -e "${RED}⚠️  Some tests failed. Check the server logs and endpoints.${NC}"
@@ -267,14 +417,17 @@ fi
 echo ""
 echo "📋 Test Coverage:"
 echo "- ZK-Persona Auth: Nonce generation, wallet login"
-echo "- SUI Service: Health checks, connection tests"
-echo "- ZK-Persona Proof Generation: End-to-end proof workflow (protected)"
-echo "- ZK-Persona Proof Verification: Public proof verification"
-echo "- RPC Endpoint: JSON-RPC interface"
+echo "- Analytics: Metrics, top repositories, trends"
+echo "- Vulnerabilities: CRUD operations, search, filtering"
+echo "- Patches: CRUD operations, AI suggestions"
+echo "- Developers: CRUD operations, statistics, rankings"
+echo "- GitHub: Webhook handling, repository analysis"
+echo "- SUI: Health checks, transaction sponsorship"
+echo "- ZK-Persona Proof: Generation and verification"
+echo "- RPC: JSON-RPC interface"
 echo ""
 echo "🔧 Notes:"
 echo "- Make sure the server is running on localhost:8080"
 echo "- Install 'jq' for better JSON formatting"
-echo "- Check server logs if any tests fail"
-echo "- Some tests require valid authentication flow"
-echo "- Test script matches actual available routes"
+echo "- Some endpoints return mock data or placeholders"
+echo "- Authentication is required for protected endpoints"

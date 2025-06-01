@@ -69,3 +69,4 @@ zkproof_service = { path = "../../services/zkproof_service" }
 sui_service = { path = "../../services/sui_service" }
 auth_service = { path = "../../services/auth_service" }
 github_service = { path = "../../services/github_service" }
+developer_service = { path = "../../services/developer_service" }
